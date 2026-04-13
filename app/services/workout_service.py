@@ -1,5 +1,5 @@
 from app.repositories.workout_repository import WorkoutRepository
-from app.schemas.workout import WorkoutCreate, WorkoutUpdate
+from app.schemas.workout_routines_schemas import WorkoutCreate, WorkoutUpdate
 from app.models.workout import Workout
 from typing import Optional, List
 

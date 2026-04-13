@@ -1,6 +1,6 @@
 from sqlmodel import Session, select, func
 from app.models.workout import Workout, WorkoutBase
-from app.schemas.workout import WorkoutCreate, WorkoutUpdate
+from app.schemas.workout_routines_schemas import WorkoutCreate, WorkoutUpdate
 from typing import Optional, Tuple, List
 from app.utilities.pagination import Pagination
 import logging

@@ -3,7 +3,7 @@ from typing import Optional
 from app.dependencies import SessionDep, AuthDep, AdminDep
 from app.repositories.workout_repository import WorkoutRepository
 from app.services.workout_service import WorkoutService
-from app.schemas.workout import WorkoutCreate, WorkoutUpdate, WorkoutResponse
+from app.schemas.workout_routines_schemas import WorkoutCreate, WorkoutUpdate, WorkoutResponse
 from . import api_router
 
 

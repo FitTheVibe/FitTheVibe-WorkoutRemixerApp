@@ -1,7 +1,7 @@
 from sqlmodel import Session, select
 from app.models.routine_workout import RoutineWorkout
 from app.models.workout import Workout
-from app.schemas.workout import RoutineWorkoutAdd, RoutineWorkoutUpdate
+from app.schemas.workout_routines_schemas import RoutineWorkoutAdd, RoutineWorkoutUpdate
 from typing import Optional, List
 import logging
 

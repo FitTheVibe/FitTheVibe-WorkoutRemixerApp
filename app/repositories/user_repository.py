@@ -1,6 +1,6 @@
 from sqlmodel import Session, select, func
 from app.models.routine import Routine
-from app.schemas.workout import RoutineCreate, RoutineUpdate
+from app.schemas.workout_routines_schemas import RoutineCreate, RoutineUpdate
 from typing import Optional, Tuple, List
 from app.utilities.pagination import Pagination
 import logging

@@ -1,6 +1,6 @@
 from app.repositories.routine_repository import RoutineRepository
 from app.repositories.routine_workout_repository import RoutineWorkoutRepository
-from app.schemas.workout import RoutineCreate, RoutineUpdate, RoutineWorkoutAdd, RoutineWorkoutUpdate
+from app.schemas.workout_routines_schemas import RoutineCreate, RoutineUpdate, RoutineWorkoutAdd, RoutineWorkoutUpdate
 from app.models.routine import Routine
 from app.models.routine_workout import RoutineWorkout
 from typing import Optional

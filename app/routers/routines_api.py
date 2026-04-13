@@ -3,7 +3,7 @@ from app.dependencies import SessionDep, AuthDep
 from app.repositories.routine_repository import RoutineRepository
 from app.repositories.routine_workout_repository import RoutineWorkoutRepository
 from app.services.routine_service import RoutineService
-from app.schemas.workout import (
+from app.schemas.workout_routines_schemas import (
     RoutineCreate, RoutineUpdate, RoutineResponse, RoutineDetailResponse,
     RoutineWorkoutAdd, RoutineWorkoutUpdate, RoutineWorkoutResponse,
     RemixRequest,
