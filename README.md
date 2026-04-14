@@ -1,105 +1,55 @@
-# FastAPIStarter
+# FitTheVibe
 
-A FastAPI template for info2602 students based on the [fullstack fastapi template](https://github.com/fastapi/full-stack-fastapi-template) with a few modifications to make it a layered architecture that combines the best of MVC and service repository pattern. This codebase is structured to reduce the repeatibility of code [(the DRY principle)](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself) as it was demonstrated in class that code is usually repeated when implementing functionality for a CLI app, a headless API, and a fullstack app. When writing software at scale, deduplicating code is important as it makes the codebase easier to maintain, test and scale.
+## Group Name
+FitTheVibe
 
-Additionally, this codebase follows an API-first, modern AJAX flow (similar to Lab 8). In essence, this can be summarized as follows. 
+## Project Summary
+FitTheVibe is a web-based fitness application that helps users create, customize, and remix workouts based on their vibe, fitness goals, or preferences. Many individuals struggle to maintain a consistent workout schedule due to limited exercise knowledge, boredom, and a lack of variety. FitTheVibe addresses this problem by allowing users to remix their routines by swapping exercises with different alternatives, ensuring workouts remain adaptable and engaging.
 
-1. If we want to have this backend web application render the UI as well, we can implement our **VIEWS** that return our user interface.
-2. A small javascript script (`utils.js`) intercepts default form submissions and instead sends an appropriate endpoint to our **api** endpoints
+The platform is designed for beginners and intermediate users who want a more personalized and flexible fitness experience that matches their vibe.
 
-The main advantage of this application structure are plenty:
-1. We don't have to implement a jinja based frontend for the application. We can simply implement api endpoints like we did in labs 1-4 
-2. We can implement a backend API for a mobile / desktop application (where the view logic resides in java/kotlin/flutter etc)
-3. We can implement a backend API that uses a separate frontend like Vue, React, Next, Nuxt etc.
-4. We can export the list of endpoints and have other services (like AI agents) consume them 
-5. We can implement an app that functions purely from the CLI
+## Target Audience
+- University students
+- Beginner to intermediate fitness users
+- Users who want more interesting exercises
+- Individuals seeking more diverse workout routines
 
+## Problem Statement
+Individuals struggle to maintain a consistent workout routine due to repetition, a lack of variety, and limited knowledge of different exercises. This often leads to decreased motivation and ineffective training.
 
-## What is the Model View Controller (MVC) pattern?
+## Proposed Solution
+FitTheVibe addresses these challenges by allowing individuals to create personalized workout routines and remix them with different exercises, ensuring variety, flexibility, and continued engagement.
 
-The MVC pattern is a code pattern that is used to organise the modules of a project and when applied to a project, it usually works as follows:
+## Features
+- Browse Workouts: Users can explore a wide variety of available exercises.
+- Create Routines: Users can build personalized workout routines.
+- Remix Routines: Users can replace exercises with existing workouts to keep workouts engaging and exciting.
 
-- **Models** are your SQLModel/SQLAlchemy classes (The classes that become database tables)
-- **Controllers** are utility functions used to mutate models and/or perform business logic
-- **Views** bind controllers to http routes passing along any user parameters from the request to the controller
+## Brand Identity
+- App Name: FitTheVibe
+- Tagline: Match your workout to your vibe
 
+## Color Palette
+- Primary: Teal Blue (#0F766E) — gives users trust and stability
+- Secondary: Neon Green (#22C55E) — promotes energy and fitness
+- Accent: Light Grey (#F3F4F6) — keeps the background clean
+- Text: Dark Grey (#111827)
 
-## What is the Service repository pattern?
+The color palette uses teal blue (#0F766E) to represent balance, clarity, and modern digital design, while green (#22C55E) symbolizes energy and vitality. Together, these colors reinforce the application's focus on dynamic and personalized fitness experiences.
 
-The Service Repository pattern is designed to keep business logic separate from the data access and it aims to separate the codebase into distinct layers.
+## Typography
+- Headings: Poppins (Bold)
+- Body: Roboto (Regular)
 
-- **The Repository Layer** acts as a mediator between the application and the data source (the database, files, etc)
-- **The Service Layer** sits between the controller and the repository and this is where business logic lives.
+These fonts were selected for clarity and a more modern digital appearance.
 
+## Logo Description
+The FitTheVibe logo combines a dumbbell symbol, which represents fitness, with a dynamic waveform to represent life, energy, and personalization. The integration of these elements reflects the app’s core concept of remixing workouts to match the individual’s vibe. The use of teal and green reinforces the themes of energy, balance, and adaptability.
 
-The job of the **repository layer** is to handle ***CRUD*** operations on a model. It doesn't care about the rules at the business logic layer, it's only concerned about how to get and manipulate data. 
+## UI Design Rationale
+The user interface is designed to be modern, clean, and simple to navigate. The use of teal blue conveys clarity and balance, while green highlights energy and activity. The layout ensures that users can create and remix workout routines without confusion or the need for profound exercise knowledge.
 
-The job of the **service layer** is to handle the **RULES** of the application. This is where the business logic comes in such as checking to see if a user's authorized to access the data.
+This design prioritizes usability and accessibility, making it suitable for a wide range of users. The color palette reinforces the application's focus on dynamic and personalized fitness experiences.
 
-## App Structure
-
-This app is structuresd as follows
-
-<pre>
-FastAPIStarter
-|-- app
-|    |- api
-|    |- dependencies
-|    |- models
-|    |- repositories
-|    |- schemas
-|    |- services
-|    |- static
-|    |- templates
-|    |- utilities
-|    |- views
-|-- tests/
-|-- env.example
-|-- pyptoject.toml
-|-- README.md
-</pre>
-
-#### App Structure info
-
-##### Main folders
-`app` This folder contains all of our application code.
-
-`tests` This contains the tests (unit tests, integration tests, etc) for the application.
-
-##### Folders inside App
-`api` This folder contains the endpoints (route fucntions) of our app.
-
-`dependencies` This folder contains the functions that we'd usually use for dependency injection e.g. getting the information of the user who's performing the request, getting a reference to the database, etc
-
-`models` This folder contains the Pydantic / SQLModel / SQLAlchemy models that eventually become database tables. Note that the files in here are strictly those that become database tables. The other models used for request and response validation go in the `schemas` folder
-
-`repositories` files in this folder are used to query the datastore, which depending on the app can be a file, database, another api, etc. Usually though, it's our database.
-
-`services` The business logic of the application lives here.
-
-`schemas` files in this folder specify pydantic / sqlmodel classes that are used for data validation only and *NOT* models that become database tables.
-
-`utilities` This contain generic helper functions
-
-`static` this contains folders that contain css, js, img and other assets we may need when this app is responsible for rendering of the frontend UI>
-
-`templates` this contains our jinja2 templates
-
-`views` this contains the route functions used for when this app is responsible for rendering the frontnend UI
-
-> Note that the file env.example provides a default set of configuration values for this application. you **MUST** create a copy of this file named `.env` before launching the app. The preconfigured environment allows a user to have an app that uses a sqlite database for a datastore as well as some other default configurations. The values in this should ideally be modified for production. For more possible variables, check out the `config.py` file
-
-
-## Using this in production
-
-
-If you so ever choose to use this template for your own projects, please consider the following:
-
-1. You **WILL** need to modify the default configuration to 
-    - Use a database that's more suitable for production. 
-    - Change the default secret
-    - Change the default environment
-2. You may need to tweak additional settings in the `config.py` file for scalability
-3. You'd need to look into a database migration / upgrade tool like alembic
-4. You may want to dockerize the application for easier deployment
-5. You may want to switch from storing cookies in localstorage to only cookies depending on your security needs.
+## Logo Idea
+A logo concept that blends a dumbbell icon and a waveform shape to express fitness, motion, and remixing energy.
