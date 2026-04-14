@@ -45,15 +45,37 @@ async def user_home_view(
         for w in workouts
     ]
 
-    routines_data = [
-        {
-            "id": str(r.id),
+    # Fetch routine details with workouts for each routine
+    routines_data = []
+    for r in routines:
+        routine_workouts = routine_service.get_routine_workouts(r.id)
+        routine_data = {
+            "id": r.id,
             "name": r.name,
             "description": r.description,
             "createdAt": r.created_at.isoformat(),
+            "user_id": r.user_id,
+            "routine_workouts": [
+                {
+                    "id": rw.id,
+                    "workout_id": rw.workout_id,
+                    "position": rw.position,
+                    "sets": rw.sets,
+                    "reps": rw.reps,
+                    "workout": {
+                        "id": rw.workout.id,
+                        "name": rw.workout.name,
+                        "description": rw.workout.description,
+                        "category": rw.workout.muscle_group,
+                        "muscle_group": rw.workout.muscle_group,
+                        "difficulty": rw.workout.difficulty,
+                        "equipment": rw.workout.equipment,
+                    }
+                }
+                for rw in routine_workouts
+            ]
         }
-        for r in routines
-    ]
+        routines_data.append(routine_data)
 
     return templates.TemplateResponse(
         request=request,
@@ -63,6 +85,6 @@ async def user_home_view(
             "exercise_detail": bool(exercise_id),
             "exercise_id": exercise_id,
             "workouts_json": json.dumps(workouts_data),
-            "routines_json": json.dumps(routines_data),
+            "routines_json": json.dumps(routines_data, default=str),
         }
     )

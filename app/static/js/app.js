@@ -302,7 +302,7 @@ async function deleteRoutineAPI(routineId) {
     }
 }
 
-// API: Fetch Routines for Current User
+// API: Fetch Routines for Current User (with full details)
 async function fetchRoutinesAPI() {
     try {
         const response = await fetch('/api/routines');
@@ -311,7 +311,26 @@ async function fetchRoutinesAPI() {
             throw new Error(`Failed to fetch routines: ${response.statusText}`);
         }
 
-        return await response.json();
+        const routines = await response.json();
+        
+        // Fetch full details for each routine (including workouts)
+        const detailedRoutines = [];
+        for (let routine of routines) {
+            try {
+                const detailResponse = await fetch(`/api/routines/${routine.id}`);
+                if (detailResponse.ok) {
+                    const detailed = await detailResponse.json();
+                    detailedRoutines.push(detailed);
+                } else {
+                    detailedRoutines.push(routine);
+                }
+            } catch (error) {
+                console.warn(`Could not fetch details for routine ${routine.id}:`, error);
+                detailedRoutines.push(routine);
+            }
+        }
+        
+        return detailedRoutines;
     } catch (error) {
         console.error('Error fetching routines:', error);
         return [];
@@ -401,9 +420,9 @@ function renderRoutines() {
                                 <p class="routine-count">${totalExercises} ${totalExercises === 1 ? 'exercise' : 'exercises'}</p>
                             </div>
                             <div class="routine-actions">
-                                <button class="icon-btn btn-remix" onclick="alert('Remix functionality - switch exercises')" title="Remix routine">
+                                <button class="icon-btn btn-remix" onclick="editRoutine(${routine.id})" title="Edit routine">
                                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                     </svg>
                                 </button>
                                 <button class="icon-btn btn-delete" onclick="deleteRoutine(${routine.id})" title="Delete routine">
@@ -433,14 +452,177 @@ function renderRoutines() {
     }
 }
 
-// View Exercise Detail
+// View Exercise Detail Modal
 function viewExerciseDetail(exerciseId) {
     const exercise = EXERCISES.find(e => e.id === exerciseId);
     if (exercise) {
-        // Open the route-backed exercise detail page in a new window
-        window.open(`/exercise-detail?id=${exerciseId}`, '_blank', 'width=900,height=700');
+        // Store current exercise ID for adding to routine
+        window.currentExerciseId = exerciseId;
+        
+        // Populate modal with exercise data
+        document.getElementById('modalExerciseName').textContent = exercise.name;
+        document.getElementById('modalExerciseDescription').textContent = exercise.description;
+        document.getElementById('modalExerciseMuscleGroup').textContent = exercise.category;
+        document.getElementById('modalExerciseDifficulty').textContent = exercise.difficulty;
+        document.getElementById('modalExerciseEquipment').textContent = exercise.equipment;
+        document.getElementById('modalExerciseDifficultyDetail').textContent = exercise.difficulty;
+        
+        // Show modal
+        document.getElementById('exerciseDetailModal').classList.add('active');
     }
 }
+
+// Close exercise detail modal
+function closeExerciseModal() {
+    document.getElementById('exerciseDetailModal').classList.remove('active');
+    window.currentExerciseId = null;
+}
+
+// Add exercise from modal to routine
+function addFromModalToRoutine() {
+    if (window.currentExerciseId) {
+        addToRoutine(window.currentExerciseId);
+        closeExerciseModal();
+    }
+}
+
+// Open edit routine modal
+function editRoutine(routineId) {
+    const routine = savedRoutines.find(r => r.id === routineId);
+    if (!routine) return;
+    
+    // Store routine ID for saving
+    window.editingRoutineId = routineId;
+    
+    // Populate form
+    document.getElementById('editRoutineName').value = routine.name;
+    document.getElementById('editRoutineDescription').value = routine.description || '';
+    
+    // Populate exercises list
+    const exercisesList = document.getElementById('editRoutineExercisesList');
+    if (routine.routine_workouts && routine.routine_workouts.length > 0) {
+        exercisesList.innerHTML = routine.routine_workouts.map((rw, idx) => `
+            <div class="edit-routine-exercise-item">
+                <span style="color: #64748b;">${idx + 1}</span>
+                <div class="edit-routine-exercise-name">${rw.workout.name}</div>
+                <input type="number" value="${rw.sets}" placeholder="Sets" class="exercise-sets-input" data-rw-id="${rw.id}" min="1">
+                <input type="number" value="${rw.reps}" placeholder="Reps" class="exercise-reps-input" data-rw-id="${rw.id}" min="1">
+                <button type="button" class="edit-routine-remove-btn" onclick="removeExerciseFromEdit(${rw.id})">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+        `).join('');
+    } else {
+        exercisesList.innerHTML = '<p style="color: #64748b;">No exercises in this routine</p>';
+    }
+    
+    // Show modal
+    document.getElementById('editRoutineModal').classList.add('active');
+}
+
+// Close edit routine modal
+function closeEditRoutineModal() {
+    document.getElementById('editRoutineModal').classList.remove('active');
+    window.editingRoutineId = null;
+}
+
+// Remove exercise from edit form (local only)
+function removeExerciseFromEdit(rwId) {
+    const exerciseItem = document.querySelector(`.edit-routine-exercise-item [data-rw-id="${rwId}"]`).closest('.edit-routine-exercise-item');
+    exerciseItem.remove();
+}
+
+// Save routine edits
+async function saveRoutineEdits() {
+    const routineId = window.editingRoutineId;
+    const name = document.getElementById('editRoutineName').value.trim();
+    const description = document.getElementById('editRoutineDescription').value.trim();
+    
+    if (!name) {
+        alert('Please enter a routine name');
+        return;
+    }
+    
+    try {
+        // Update routine metadata
+        const response = await fetch(`/api/routines/${routineId}`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                name,
+                description,
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Failed to update routine: ${response.statusText}`);
+        }
+        
+        // Update exercise sets/reps
+        const setsInputs = document.querySelectorAll('.exercise-sets-input');
+        const repsInputs = document.querySelectorAll('.exercise-reps-input');
+        
+        for (let input of setsInputs) {
+            const rwId = parseInt(input.dataset.rwId);
+            const sets = parseInt(input.value);
+            await updateRoutineWorkoutAPI(routineId, rwId, { sets });
+        }
+        
+        for (let input of repsInputs) {
+            const rwId = parseInt(input.dataset.rwId);
+            const reps = parseInt(input.value);
+            await updateRoutineWorkoutAPI(routineId, rwId, { reps });
+        }
+        
+        // Refresh data and close modal
+        savedRoutines = await fetchRoutinesAPI();
+        renderRoutines();
+        closeEditRoutineModal();
+        alert('Routine updated successfully!');
+    } catch (error) {
+        console.error('Error saving routine edits:', error);
+        alert('Failed to save routine changes. Please try again.');
+    }
+}
+
+// API: Update Routine Workout (sets/reps)
+async function updateRoutineWorkoutAPI(routineId, rwId, data) {
+    try {
+        const response = await fetch(`/api/routines/${routineId}/workouts/${rwId}`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Failed to update workout: ${response.statusText}`);
+        }
+        
+        return await response.json();
+    } catch (error) {
+        console.error('Error updating routine workout:', error);
+        throw error;
+    }
+}
+
+// Close modals when clicking outside
+document.addEventListener('click', (e) => {
+    const exerciseModal = document.getElementById('exerciseDetailModal');
+    const editModal = document.getElementById('editRoutineModal');
+    
+    if (e.target === exerciseModal) {
+        closeExerciseModal();
+    }
+    if (e.target === editModal) {
+        closeEditRoutineModal();
+    }
+});
 
 // Initialize app
 init();
