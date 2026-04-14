@@ -1,0 +1,751 @@
+﻿{% extends "authenticated-base.html" %}
+
+{% block internal_css %}
+
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: #0f172a;
+            line-height: 1.5;
+            padding: 1rem;
+            overflow-y: auto;
+        }
+
+        .modal {
+            background-color: white;
+            border-radius: 0.75rem;
+            max-width: 64rem;
+            margin: 0 auto;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        /* Header */
+        .modal-header {
+            position: sticky;
+            top: 0;
+            background-color: white;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: start;
+            justify-content: space-between;
+            gap: 1rem;
+            z-index: 10;
+        }
+
+        .header-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        h2 {
+            font-size: 1.125rem;
+            font-weight: 500;
+            margin-bottom: 0.75rem;
+        }
+
+        h3 {
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .header-badges {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .badge {
+            font-size: 0.875rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+        }
+
+        .badge-primary {
+            background-color: rgba(13, 148, 136, 0.1);
+            color: #0d9488;
+        }
+
+        .badge-accent {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+
+        .close-btn {
+            flex-shrink: 0;
+            width: 2.25rem;
+            height: 2.25rem;
+            border-radius: 0.5rem;
+            border: 1px solid #e2e8f0;
+            background-color: transparent;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+        }
+
+        .close-btn:hover {
+            background-color: #f1f5f9;
+        }
+
+        .close-btn svg {
+            width: 1rem;
+            height: 1rem;
+            stroke: #0f172a;
+        }
+
+        /* Content */
+        .modal-content {
+            padding: 1rem 1.5rem;
+        }
+
+        .section {
+            margin-bottom: 1.5rem;
+        }
+
+        /* Video Placeholder */
+        .video-placeholder {
+            aspect-ratio: 16/9;
+            border-radius: 0.5rem;
+            background-color: #f1f5f9;
+            border: 2px dashed #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+
+        .play-icon {
+            width: 4rem;
+            height: 4rem;
+            border-radius: 50%;
+            background-color: rgba(16, 185, 129, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .play-icon svg {
+            width: 2rem;
+            height: 2rem;
+            stroke: #10b981;
+            margin-left: 0.25rem;
+        }
+
+        .placeholder-text {
+            color: #64748b;
+            text-align: center;
+        }
+
+        /* Grid Layout */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        /* Steps */
+        .steps-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .step-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .step-image {
+            aspect-ratio: 4/3;
+            border-radius: 0.5rem;
+            background-color: #f1f5f9;
+            border: 2px dashed #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .step-number {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            background-color: rgba(13, 148, 136, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0d9488;
+            font-weight: 500;
+        }
+
+        .step-description {
+            font-size: 0.875rem;
+        }
+
+        /* Muscle Groups */
+        .muscle-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .muscle-badge {
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.5rem;
+            background-color: #f0fdfa;
+            border: 1px solid #e2e8f0;
+        }
+
+        /* Stats */
+        .stats-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            background-color: rgba(241, 245, 249, 0.5);
+        }
+
+        .stat-icon {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .stat-icon-primary {
+            background-color: rgba(13, 148, 136, 0.1);
+        }
+
+        .stat-icon-accent {
+            background-color: rgba(16, 185, 129, 0.1);
+        }
+
+        .stat-icon svg {
+            width: 1.25rem;
+            height: 1.25rem;
+        }
+
+        .stat-icon-primary svg {
+            stroke: #0d9488;
+        }
+
+        .stat-icon-accent svg {
+            stroke: #10b981;
+        }
+
+        .stat-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+
+        .stat-value {
+            font-weight: 500;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* Tips List */
+        .tips-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .tip-item {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .tip-bullet {
+            color: #10b981;
+            flex-shrink: 0;
+        }
+
+        /* Mistakes Grid */
+        .mistakes-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+        }
+
+        .mistake-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .mistake-image {
+            aspect-ratio: 1;
+            border-radius: 0.5rem;
+            border: 2px dashed;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.375rem;
+            padding: 0.5rem;
+        }
+
+        .mistake-wrong {
+            background-color: rgba(239, 68, 68, 0.05);
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .mistake-correct {
+            background-color: rgba(16, 185, 129, 0.05);
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        .mistake-icon {
+            width: 1.5rem;
+            height: 1.5rem;
+        }
+
+        .mistake-wrong .mistake-icon {
+            stroke: #ef4444;
+        }
+
+        .mistake-correct .mistake-icon {
+            stroke: #10b981;
+        }
+
+        .mistake-label {
+            font-size: 0.75rem;
+            text-align: center;
+        }
+
+        /* Equipment */
+        .equipment-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .equipment-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid #e2e8f0;
+            background-color: white;
+        }
+
+        /* Footer */
+        .modal-footer {
+            position: sticky;
+            bottom: 0;
+            background-color: white;
+            border-top: 1px solid #e2e8f0;
+            padding: 1rem 1.5rem;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: #10b981;
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-primary:hover {
+            background-color: #059669;
+        }
+
+        /* Responsive */
+        @media (min-width: 640px) {
+            .modal-header,
+            .modal-content,
+            .modal-footer {
+                padding-left: 1.5rem;
+                padding-right: 1.5rem;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .content-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+    {% block additional_styles %}{% endblock %}
+
+{% endblock %}
+
+{% block external_js %}
+<script src="{{ url_for('static', path='js/app.js')}}"></script>
+{% endblock %}
+
+
+{% block subpage_content %}
+
+    <div class="modal">
+        <!-- Header -->
+        <div class="modal-header">
+            <div class="header-info">
+                <h1 id="exerciseName">Push-ups</h1>
+                <div class="header-badges">
+                    <span class="badge badge-primary" id="exerciseCategory">Strength</span>
+                    <span class="badge badge-accent" id="exerciseDifficulty">Beginner</span>
+                </div>
+            </div>
+            <button class="close-btn" onclick="window.close()">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Content -->
+        <div class="modal-content">
+            <!-- Video Demo -->
+            <div class="section">
+                <h2>Exercise Demonstration</h2>
+                <div class="video-placeholder">
+                    <div class="play-icon">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <div class="placeholder-text">
+                        <p>[Animation Placeholder]</p>
+                        <p style="font-size: 0.875rem; margin-top: 0.25rem;">Short looping demonstration</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grid Layout -->
+            <div class="content-grid">
+                <!-- Left Column: Steps -->
+                <div>
+                    <div class="section">
+                        <h2>Step-by-Step Guide</h2>
+                        <div class="steps-list">
+                            <div class="step-item">
+                                <div class="step-image">
+                                    <div class="step-number">1</div>
+                                    <p class="placeholder-text" style="font-size: 0.75rem;">[Step 1 Image]</p>
+                                </div>
+                                <p class="step-description">Position yourself in the starting stance with proper form</p>
+                            </div>
+
+                            <div class="step-item">
+                                <div class="step-image">
+                                    <div class="step-number">2</div>
+                                    <p class="placeholder-text" style="font-size: 0.75rem;">[Step 2 Image]</p>
+                                </div>
+                                <p class="step-description">Engage your core and maintain neutral spine alignment</p>
+                            </div>
+
+                            <div class="step-item">
+                                <div class="step-image">
+                                    <div class="step-number">3</div>
+                                    <p class="placeholder-text" style="font-size: 0.75rem;">[Step 3 Image]</p>
+                                </div>
+                                <p class="step-description">Execute the movement in a controlled manner</p>
+                            </div>
+
+                            <div class="step-item">
+                                <div class="step-image">
+                                    <div class="step-number">4</div>
+                                    <p class="placeholder-text" style="font-size: 0.75rem;">[Step 4 Image]</p>
+                                </div>
+                                <p class="step-description">Return to starting position and repeat</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Details -->
+                <div>
+                    <!-- Targeted Muscles -->
+                    <div class="section">
+                        <h2>Targeted Muscles</h2>
+                        <div class="muscle-grid" id="muscleGroups">
+                            <span class="muscle-badge">Chest</span>
+                            <span class="muscle-badge">Triceps</span>
+                            <span class="muscle-badge">Shoulders</span>
+                        </div>
+                    </div>
+
+                    <!-- Quick Stats -->
+                    <div class="section">
+                        <h2>Quick Stats</h2>
+                        <div class="stats-list">
+                            <div class="stat-item">
+                                <div class="stat-icon stat-icon-primary">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                </div>
+                                <div class="stat-info">
+                                    <p class="stat-label">Duration</p>
+                                    <p class="stat-value">30-45 seconds per set</p>
+                                </div>
+                            </div>
+
+                            <div class="stat-item">
+                                <div class="stat-icon stat-icon-accent">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                                    </svg>
+                                </div>
+                                <div class="stat-info">
+                                    <p class="stat-label">Intensity</p>
+                                    <p class="stat-value">Moderate to High</p>
+                                </div>
+                            </div>
+
+                            <div class="stat-item">
+                                <div class="stat-icon stat-icon-primary">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                                    </svg>
+                                </div>
+                                <div class="stat-info">
+                                    <p class="stat-label">Recommended Sets</p>
+                                    <p class="stat-value">3-4 sets</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Form Tips -->
+                    <div class="section">
+                        <h2>Form Tips</h2>
+                        <div class="tips-list">
+                            <div class="tip-item">
+                                <span class="tip-bullet">•</span>
+                                <span>Keep your movements controlled and deliberate</span>
+                            </div>
+                            <div class="tip-item">
+                                <span class="tip-bullet">•</span>
+                                <span>Breathe steadily throughout the exercise</span>
+                            </div>
+                            <div class="tip-item">
+                                <span class="tip-bullet">•</span>
+                                <span>Focus on quality of movement over quantity</span>
+                            </div>
+                            <div class="tip-item">
+                                <span class="tip-bullet">•</span>
+                                <span>Stop if you feel any sharp pain</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Common Mistakes -->
+                    <div class="section">
+                        <h2>Common Mistakes</h2>
+                        <div class="mistakes-grid">
+                            <div class="mistake-item">
+                                <div class="mistake-image mistake-wrong">
+                                    <svg class="mistake-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                    </svg>
+                                    <p class="placeholder-text" style="font-size: 0.75rem;">[Wrong Form]</p>
+                                </div>
+                                <p class="mistake-label">Incorrect posture</p>
+                            </div>
+                            <div class="mistake-item">
+                                <div class="mistake-image mistake-correct">
+                                    <svg class="mistake-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                                    </svg>
+                                    <p class="placeholder-text" style="font-size: 0.75rem;">[Correct Form]</p>
+                                </div>
+                                <p class="mistake-label">Proper alignment</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Equipment -->
+            <div class="section">
+                <h2>Equipment Needed</h2>
+                <div class="equipment-list">
+                    <div class="equipment-badge">
+                        <p style="font-size: 0.875rem;">None (Bodyweight)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="modal-footer">
+            <button class="btn-primary" onclick="window.close()">Got It</button>
+        </div>
+    </div>
+
+ {% block subpage_scripts %}
+
+
+    <script>
+        // Get exercise ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const exerciseId = urlParams.get('id');
+
+        // Exercise data (same as in app.js)
+        const EXERCISES = [
+            {
+                id: "1",
+                name: "Push-ups",
+                category: "Strength",
+                muscleGroups: ["Chest", "Triceps", "Shoulders"],
+                difficulty: "Beginner",
+                description: "Classic bodyweight exercise for upper body strength"
+            },
+            {
+                id: "2",
+                name: "Squats",
+                category: "Strength",
+                muscleGroups: ["Legs", "Glutes", "Core"],
+                difficulty: "Beginner",
+                description: "Fundamental lower body movement"
+            },
+            {
+                id: "3",
+                name: "Plank",
+                category: "Core",
+                muscleGroups: ["Core", "Shoulders"],
+                difficulty: "Beginner",
+                description: "Isometric core strengthening exercise"
+            },
+            {
+                id: "4",
+                name: "Burpees",
+                category: "Cardio",
+                muscleGroups: ["Full Body"],
+                difficulty: "Intermediate",
+                description: "High-intensity full body cardio movement"
+            },
+            {
+                id: "5",
+                name: "Lunges",
+                category: "Strength",
+                muscleGroups: ["Legs", "Glutes"],
+                difficulty: "Beginner",
+                description: "Unilateral leg exercise for balance and strength"
+            },
+            {
+                id: "6",
+                name: "Mountain Climbers",
+                category: "Cardio",
+                muscleGroups: ["Core", "Shoulders", "Legs"],
+                difficulty: "Intermediate",
+                description: "Dynamic cardio exercise with core engagement"
+            },
+            {
+                id: "7",
+                name: "Pull-ups",
+                category: "Strength",
+                muscleGroups: ["Back", "Biceps"],
+                difficulty: "Advanced",
+                description: "Upper body pulling exercise"
+            },
+            {
+                id: "8",
+                name: "Deadlifts",
+                category: "Strength",
+                muscleGroups: ["Back", "Legs", "Core"],
+                difficulty: "Intermediate",
+                description: "Compound movement for posterior chain"
+            },
+            {
+                id: "9",
+                name: "Jump Rope",
+                category: "Cardio",
+                muscleGroups: ["Legs", "Shoulders"],
+                difficulty: "Beginner",
+                description: "Classic cardio exercise for endurance"
+            },
+            {
+                id: "10",
+                name: "Bicycle Crunches",
+                category: "Core",
+                muscleGroups: ["Core"],
+                difficulty: "Beginner",
+                description: "Dynamic ab exercise targeting obliques"
+            },
+            {
+                id: "11",
+                name: "Bench Press",
+                category: "Strength",
+                muscleGroups: ["Chest", "Triceps", "Shoulders"],
+                difficulty: "Intermediate",
+                description: "Classic chest building exercise"
+            },
+            {
+                id: "12",
+                name: "Russian Twists",
+                category: "Core",
+                muscleGroups: ["Core", "Obliques"],
+                difficulty: "Intermediate",
+                description: "Rotational core exercise"
+            }
+        ];
+
+        // Load exercise data
+        if (exerciseId) {
+            const exercise = EXERCISES.find(e => e.id === exerciseId);
+            if (exercise) {
+                document.getElementById('exerciseName').textContent = exercise.name;
+                document.getElementById('exerciseCategory').textContent = exercise.category;
+                document.getElementById('exerciseDifficulty').textContent = exercise.difficulty;
+
+                // Update muscle groups
+                const muscleGroupsContainer = document.getElementById('muscleGroups');
+                muscleGroupsContainer.innerHTML = exercise.muscleGroups.map(muscle =>
+                    `<span class="muscle-badge">${muscle}</span>`
+                ).join('');
+
+                // Update page title
+                document.title = `${exercise.name} - FitTheVibe`;
+            }
+        }
+        </script>
+    {% endblock %}
+
+
+{% endblock %}

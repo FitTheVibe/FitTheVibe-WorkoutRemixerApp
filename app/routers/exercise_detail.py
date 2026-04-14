@@ -6,19 +6,16 @@ from app.dependencies.auth import AuthDep, IsUserLoggedIn, get_current_user, is_
 from . import router, templates
 
 
-@router.get("/app", response_class=HTMLResponse)
-async def user_home_view(
+@router.get("/exercise-detail", response_class=HTMLResponse)
+async def exercise_detail_view(
     request: Request,
     user: AuthDep,
     db:SessionDep
 ):
-    exercise_id = request.query_params.get('id')
     return templates.TemplateResponse(
         request=request, 
-        name="app.html",
+        name="exercise-detail.html",
         context={
-            "user": user,
-            "exercise_detail": bool(exercise_id),
-            "exercise_id": exercise_id
+            "user": user
         }
     )
