@@ -67,6 +67,7 @@ function setupEventListeners() {
 
     routineNameInput.addEventListener('input', (e) => {
         routineName = e.target.value;
+        renderCurrentRoutine();
     });
 }
 
@@ -185,51 +186,88 @@ function removeFromRoutine(index) {
 
 // Render Current Routine
 function renderCurrentRoutine() {
+    const container = document.getElementById('currentRoutineContent');
+    
     if (currentRoutine.length === 0) {
-        currentRoutineContent.innerHTML = `
+        container.innerHTML = `
             <div class="empty-state">
-                <svg class="empty-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <p class="empty-title">Your routine is empty</p>
+                <p class="empty-description">Add exercises from the Browse tab.</p>
+                <button class="btn-primary" onclick="switchView('browse')" style="margin-top: 1rem;">
+                    Browse Exercises
+                </button>
+            </div>`;
+        return;
+    }
+
+    let html = `
+        <div class="current-routine-list">
+            ${currentRoutine.map((exercise, index) => `
+                <div class="routine-list-item">
+                    <div class="routine-item-number">${index + 1}</div>
+                    <div class="routine-item-info">
+                        <div class="routine-item-name" style="font-weight: 600;">${exercise.name}</div>
+                        
+                        <div style="display: flex; gap: 15px; margin-top: 8px;">
+                            <div style="display: flex; align-items: center; gap: 5px;">
+                                <label style="font-size: 0.8rem; color: #64748b;">Sets:</label>
+                                <input type="number" value="${exercise.sets || 3}" 
+                                    onchange="updateExerciseDetail(${index}, 'sets', this.value)"
+                                    style="width: 45px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 5px;">
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 5px;">
+                                <label style="font-size: 0.8rem; color: #64748b;">Reps:</label>
+                                <input type="number" value="${exercise.reps || 10}" 
+                                    onchange="updateExerciseDetail(${index}, 'reps', this.value)"
+                                    style="width: 45px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 5px;">
+                            </div>
+                        </div>
+                    </div>
+                    <button class="remove-btn" onclick="removeFromRoutine(${index})">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:16px; height:16px;">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+            `).join('')}
+        </div>
+        
+        <div class="action-buttons" style="margin-top: 20px; display: flex; gap: 10px; align-items: center;">
+            <button class="btn-secondary" onclick="clearRoutine()" style="flex: 1; padding: 10px 5px;">
+                Clear
+            </button>
+
+            <button class="btn-secondary" onclick="switchView('browse')" style="flex: 1.5; display: flex; align-items: center; justify-content: center; gap: 5px; border: 1px dashed #0d9488; color: #0d9488; padding: 10px 5px;">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 16px; height: 16px;">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                 </svg>
-                <h3 class="empty-title">No exercises yet</h3>
-                <p class="empty-description">Browse workouts to add exercises to your routine</p>
-                <button class="btn-primary" onclick="switchView('browse')">Browse Workouts</button>
-            </div>
-        `;
-    } else {
-        currentRoutineContent.innerHTML = `
-            <div class="current-routine-list">
-                ${currentRoutine.map((exercise, index) => `
-                    <div class="routine-list-item">
-                        <span class="routine-item-number">${index + 1}</span>
-                        <div class="routine-item-info">
-                            <div class="routine-item-name">${exercise.name}</div>
-                            <div class="routine-item-category">${exercise.category}</div>
-                        </div>
-                        <button class="remove-btn" onclick="removeFromRoutine(${index})">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                            </svg>
-                        </button>
-                    </div>
-                `).join('')}
-            </div>
-            <div class="action-buttons">
-                <button class="btn-accent" onclick="saveRoutine()" ${!routineName.trim() ? 'disabled' : ''}>
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
-                    </svg>
-                    Save Routine
-                </button>
-                <button class="btn-primary" onclick="switchView('browse')">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                    </svg>
-                    Add More
-                </button>
-            </div>
-        `;
-    }
+                Add More
+            </button>
+
+            <button class="btn-primary" id="saveRoutineBtn" ${!routineName.trim() ? 'disabled' : ''} onclick="saveRoutine()" style="flex: 2; padding: 10px 5px;">
+                Save Routine
+            </button>
+        </div>
+    `;
+    container.innerHTML = html;
+}
+
+function updateExerciseDetail(index, field, value) {
+    currentRoutine[index][field] = parseInt(value) || 0;
+}
+
+function clearRoutine() {
+    // No more confirm()!
+    currentRoutine = [];
+    routineName = '';
+    
+    const nameInput = document.getElementById('routineNameInput');
+    const descInput = document.getElementById('routineDescriptionInput');
+    
+    if (nameInput) nameInput.value = '';
+    if (descInput) descInput.value = '';
+
+    renderCurrentRoutine();
 }
 
 // API: Create Routine
@@ -336,34 +374,69 @@ async function fetchRoutinesAPI() {
         return [];
     }
 }
+// Function for Pop up
+function showToast(message) {
+    let toast = document.getElementById('toast-container');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'toast-container';
+        document.body.appendChild(toast);
+    }
+    
+    toast.innerText = message;
+    toast.classList.remove('toast-hidden');
+
+    // Hide after 3 seconds
+    setTimeout(() => {
+        toast.classList.add('toast-hidden');
+    }, 3000);
+}
 
 // Save Routine (creates in database)
 async function saveRoutine() {
-    if (currentRoutine.length === 0 || !routineName.trim()) return;
+    //  Validation check
+    if (currentRoutine.length === 0 || !routineName.trim()) {
+        alert("Please enter a routine name and add at least one exercise.");
+        return;
+    }
+
+    //  Capture the new description field
+    const routineDescription = document.getElementById('routineDescriptionInput').value;
 
     try {
-        // Create routine in database
-        const newRoutine = await createRoutineAPI(routineName, '');
+        //  Create the routine container
+        const newRoutine = await createRoutineAPI(routineName, routineDescription);
 
-        // Add each workout to the routine
+        //  Loop through exercises and add them with their sets/reps
+        
         for (let i = 0; i < currentRoutine.length; i++) {
             const exercise = currentRoutine[i];
-            await addWorkoutToRoutineAPI(newRoutine.id, parseInt(exercise.id), i);
+            
+            await addWorkoutToRoutineAPI(
+                newRoutine.id, 
+                parseInt(exercise.id), 
+                i,               // position
+                exercise.sets,   // from the input in the UI
+                exercise.reps    // from the input in the UI
+            );
         }
 
-        // Refresh the routines list
+        //  Refresh local data and UI
         savedRoutines = await fetchRoutinesAPI();
 
-        // Reset form
+        // Reset the form
         currentRoutine = [];
         routineName = '';
         routineNameInput.value = '';
+        document.getElementById('routineDescriptionInput').value = '';
 
         renderRoutines();
         switchView('routines');
-        alert('Routine saved successfully!');
+        showToast('Routine saved successfully!');
+
     } catch (error) {
         console.error('Error saving routine:', error);
+        showToast('Failed to save routine.');
     }
 }
 

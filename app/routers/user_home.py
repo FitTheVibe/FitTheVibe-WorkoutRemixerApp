@@ -72,7 +72,7 @@ async def user_home_view(
                         "equipment": rw.workout.equipment,
                     }
                 }
-                for rw in routine_workouts
+                for rw in routine_workouts if rw.workout is not None
             ]
         }
         routines_data.append(routine_data)
