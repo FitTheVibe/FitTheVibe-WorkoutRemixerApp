@@ -23,18 +23,18 @@ def initialize():
 
         # seed workouts
         workouts = [
-            Workout(name="Squats", description="Lower body compound movement", muscle_group="legs", difficulty="beginner", equipment="barbell"),
-            Workout(name="Lunges", description="Unilateral leg exercise", muscle_group="legs", difficulty="beginner", equipment="none"),
-            Workout(name="Deadlifts", description="Full body posterior chain", muscle_group="legs", difficulty="intermediate", equipment="barbell"),
-            Workout(name="Bench Press", description="Upper body pushing movement", muscle_group="chest", difficulty="intermediate", equipment="barbell"),
-            Workout(name="Push Ups", description="Bodyweight chest exercise", muscle_group="chest", difficulty="beginner", equipment="none"),
-            Workout(name="Pull Ups", description="Bodyweight back exercise", muscle_group="back", difficulty="intermediate", equipment="bar"),
-            Workout(name="Bent Over Row", description="Compound back movement", muscle_group="back", difficulty="intermediate", equipment="barbell"),
-            Workout(name="Shoulder Press", description="Overhead pressing movement", muscle_group="shoulders", difficulty="intermediate", equipment="dumbbells"),
-            Workout(name="Bicep Curls", description="Isolated bicep exercise", muscle_group="arms", difficulty="beginner", equipment="dumbbells"),
-            Workout(name="Tricep Dips", description="Bodyweight tricep exercise", muscle_group="arms", difficulty="beginner", equipment="bench"),
-            Workout(name="Plank", description="Core stability exercise", muscle_group="core", difficulty="beginner", equipment="none"),
-            Workout(name="Crunches", description="Abdominal exercise", muscle_group="core", difficulty="beginner", equipment="none"),
+            Workout(name="Squats", description="Lower body compound movement", muscle_group="legs", difficulty="beginner", equipment="barbell",demo_img_url="https://media1.tenor.com/m/jAjshaoXrewAAAAd/sumo-squat-exercise.gif"    ),
+            Workout(name="Lunges", description="Unilateral leg exercise", muscle_group="legs", difficulty="beginner", equipment="none", demo_img_url="https://media1.tenor.com/m/-YiEMDDCOwoAAAAd/afundo.gif"    ),
+            Workout(name="Deadlifts", description="Full body posterior chain", muscle_group="legs", difficulty="intermediate", equipment="barbell", demo_img_url="https://media1.tenor.com/m/NgtmNzYYAzYAAAAd/deadlift-james-smith.gif"),
+            Workout(name="Bench Press", description="Upper body pushing movement", muscle_group="chest", difficulty="intermediate", equipment="barbell", demo_img_url="https://media1.tenor.com/m/FxBO7P1kj6kAAAAd/gym.gif"),
+            Workout(name="Push Ups", description="Bodyweight chest exercise", muscle_group="chest", difficulty="beginner", equipment="none", demo_img_url="https://media1.tenor.com/m/0PnchcCC_0QAAAAd/push-up.gif"),
+            Workout(name="Pull Ups", description="Bodyweight back exercise", muscle_group="back", difficulty="intermediate", equipment="bar", demo_img_url="https://media1.tenor.com/m/G-a7AMKpQugAAAAd/pull-ups-nigel-sylvester.gif"),
+            Workout(name="Bent Over Row", description="Compound back movement", muscle_group="back", difficulty="intermediate", equipment="barbell", demo_img_url="https://media1.tenor.com/m/-Z-hLGN30WAAAAAC/bentover-row.gif"),
+            Workout(name="Shoulder Press", description="Overhead pressing movement", muscle_group="shoulders", difficulty="intermediate", equipment="dumbbells", demo_img_url="https://media1.tenor.com/m/uhxIEHzn7moAAAAd/shoulder-press-machine.gif"),
+            Workout(name="Bicep Curls", description="Isolated bicep exercise", muscle_group="arms", difficulty="beginner", equipment="dumbbells", demo_img_url="https://media.tenor.com/EYrynVOuaZQAAAA1/supernaturalwriter-supernaturalwritertwitch.webp"),
+            Workout(name="Tricep Dips", description="Bodyweight tricep exercise", muscle_group="arms", difficulty="beginner", equipment="bench", demo_img_url="https://media1.tenor.com/m/b5xcjuJpdi4AAAAC/brazosms.gif"),
+            Workout(name="Plank", description="Core stability exercise", muscle_group="core", difficulty="beginner", equipment="none", demo_img_url="https://media1.tenor.com/m/7O6JimICFLoAAAAd/plank.gif"),
+            Workout(name="Crunches", description="Abdominal exercise", muscle_group="core", difficulty="beginner", equipment="none", demo_img_url="https://media1.tenor.com/m/26blyZDE4a0AAAAd/exercise-twist.gif"),
         ]
         db.add_all(workouts)
         db.commit()

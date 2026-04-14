@@ -81,18 +81,19 @@ def seed_workouts(session: Session):
         return
 
     workouts = [
-        Workout(name="Squats", created_by= bob.id, description="Lower body compound movement", muscle_group="legs", difficulty="beginner", equipment="barbell"),
-        Workout(name="Lunges", created_by= bob.id, description="Unilateral leg exercise", muscle_group="legs", difficulty="beginner", equipment="none"),
-        Workout(name="Deadlifts", created_by= bob.id, description="Full body posterior chain", muscle_group="legs", difficulty="intermediate", equipment="barbell"),
-        Workout(name="Bench Press", created_by= bob.id, description="Upper body pushing movement", muscle_group="chest", difficulty="intermediate", equipment="barbell"),
-        Workout(name="Push Ups", created_by= bob.id, description="Bodyweight chest exercise", muscle_group="chest", difficulty="beginner", equipment="none"),
-        Workout(name="Pull Ups", created_by= bob.id, description="Bodyweight back exercise", muscle_group="back", difficulty="intermediate", equipment="bar"),
-        Workout(name="Bent Over Row", created_by= bob.id,  description="Compound back movement", muscle_group="back", difficulty="intermediate", equipment="barbell"),
-        Workout(name="Shoulder Press", created_by= bob.id, description="Overhead pressing movement", muscle_group="shoulders", difficulty="intermediate", equipment="dumbbells"),
-        Workout(name="Bicep Curls", created_by= bob.id, description="Isolated bicep exercise", muscle_group="arms", difficulty="beginner", equipment="dumbbells"),
-        Workout(name="Tricep Dips", created_by= bob.id, description="Bodyweight tricep exercise", muscle_group="arms", difficulty="beginner", equipment="bench"),
-        Workout(name="Plank", created_by= bob.id, description="Core stability exercise", muscle_group="core", difficulty="beginner", equipment="none"),
-        Workout(name="Crunches", created_by= bob.id, description="Abdominal exercise", muscle_group="core", difficulty="beginner", equipment="none"),
+       
+        Workout(name="Squats", created_by= bob.id, description="Lower body compound movement", muscle_group="legs", difficulty="beginner", equipment="barbell",demo_img_url="https://media1.tenor.com/m/jAjshaoXrewAAAAd/sumo-squat-exercise.gif"    ),
+            Workout(name="Lunges", created_by= bob.id, description="Unilateral leg exercise", muscle_group="legs", difficulty="beginner", equipment="none", demo_img_url="https://media1.tenor.com/m/-YiEMDDCOwoAAAAd/afundo.gif"    ),
+            Workout(name="Deadlifts", created_by= bob.id, description="Full body posterior chain", muscle_group="legs", difficulty="intermediate", equipment="barbell", demo_img_url="https://media1.tenor.com/m/NgtmNzYYAzYAAAAd/deadlift-james-smith.gif"),
+            Workout(name="Bench Press", created_by= bob.id, description="Upper body pushing movement", muscle_group="chest", difficulty="intermediate", equipment="barbell", demo_img_url="https://media1.tenor.com/m/FxBO7P1kj6kAAAAd/gym.gif"),
+            Workout(name="Push Ups", created_by= bob.id, description="Bodyweight chest exercise", muscle_group="chest", difficulty="beginner", equipment="none", demo_img_url="https://media1.tenor.com/m/0PnchcCC_0QAAAAd/push-up.gif"),
+            Workout(name="Pull Ups", created_by= bob.id, description="Bodyweight back exercise", muscle_group="back", difficulty="intermediate", equipment="bar", demo_img_url="https://media1.tenor.com/m/G-a7AMKpQugAAAAd/pull-ups-nigel-sylvester.gif"),
+            Workout(name="Bent Over Row", created_by= bob.id, description="Compound back movement", muscle_group="back", difficulty="intermediate", equipment="barbell", demo_img_url="https://media1.tenor.com/m/-Z-hLGN30WAAAAAC/bentover-row.gif"),
+            Workout(name="Shoulder Press", created_by= bob.id, description="Overhead pressing movement", muscle_group="shoulders", difficulty="intermediate", equipment="dumbbells", demo_img_url="https://media1.tenor.com/m/uhxIEHzn7moAAAAd/shoulder-press-machine.gif"),
+            Workout(name="Bicep Curls", created_by= bob.id, description="Isolated bicep exercise", muscle_group="arms", difficulty="beginner", equipment="dumbbells", demo_img_url="https://media.tenor.com/EYrynVOuaZQAAAA1/supernaturalwriter-supernaturalwritertwitch.webp"),
+            Workout(name="Tricep Dips", created_by= bob.id, description="Bodyweight tricep exercise", muscle_group="arms", difficulty="beginner", equipment="bench", demo_img_url="https://media1.tenor.com/m/b5xcjuJpdi4AAAAC/brazosms.gif"),
+            Workout(name="Plank", created_by= bob.id, description="Core stability exercise", muscle_group="core", difficulty="beginner", equipment="none", demo_img_url="https://media1.tenor.com/m/7O6JimICFLoAAAAd/plank.gif"),
+            Workout(name="Crunches", created_by= bob.id, description="Abdominal exercise", muscle_group="core", difficulty="beginner", equipment="none", demo_img_url="https://media1.tenor.com/m/26blyZDE4a0AAAAd/exercise-twist.gif"),
     ]
 
     for workout in workouts:

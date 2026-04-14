@@ -10,6 +10,7 @@ class WorkoutCreate(SQLModel):
     muscle_group: str
     difficulty: str
     equipment: str
+    demo_img_url: str
 
 class WorkoutUpdate(SQLModel):
     name: Optional[str] = None
@@ -17,6 +18,8 @@ class WorkoutUpdate(SQLModel):
     muscle_group: Optional[str] = None
     difficulty: Optional[str] = None
     equipment: Optional[str] = None
+    demo_img_url: Optional[str] = None
+
 
 class WorkoutResponse(SQLModel):
     id: int

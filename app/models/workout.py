@@ -10,7 +10,7 @@ class WorkoutBase(SQLModel):
     muscle_group: str   # e.g. "chest", "legs", "back"
     difficulty: str     # e.g. "beginner", "intermediate", "advanced"
     equipment: str      # e.g. "none", "dumbbells", "barbell"
-    # demo_img_url: Optional[str] = None
+    demo_img_url: str
 
 class Workout(WorkoutBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
