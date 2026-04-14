@@ -29,6 +29,7 @@ class WorkoutResponse(SQLModel):
     difficulty: str
     equipment: str
     created_by: Optional[int]
+    demo_img_url: Optional[str]
 
 
 #Routine Schemas
