@@ -19,105 +19,8 @@ async function main(){
     loadTable(users);
 }
 
-// Exercise Data
-const EXERCISES = [
-    {
-        id: "1",
-        name: "Push-ups",
-        category: "Strength",
-        muscleGroups: ["Chest", "Triceps", "Shoulders"],
-        difficulty: "Beginner",
-        description: "Classic bodyweight exercise for upper body strength"
-    },
-    {
-        id: "2",
-        name: "Squats",
-        category: "Strength",
-        muscleGroups: ["Legs", "Glutes", "Core"],
-        difficulty: "Beginner",
-        description: "Fundamental lower body movement"
-    },
-    {
-        id: "3",
-        name: "Plank",
-        category: "Core",
-        muscleGroups: ["Core", "Shoulders"],
-        difficulty: "Beginner",
-        description: "Isometric core strengthening exercise"
-    },
-    {
-        id: "4",
-        name: "Burpees",
-        category: "Cardio",
-        muscleGroups: ["Full Body"],
-        difficulty: "Intermediate",
-        description: "High-intensity full body cardio movement"
-    },
-    {
-        id: "5",
-        name: "Lunges",
-        category: "Strength",
-        muscleGroups: ["Legs", "Glutes"],
-        difficulty: "Beginner",
-        description: "Unilateral leg exercise for balance and strength"
-    },
-    {
-        id: "6",
-        name: "Mountain Climbers",
-        category: "Cardio",
-        muscleGroups: ["Core", "Shoulders", "Legs"],
-        difficulty: "Intermediate",
-        description: "Dynamic cardio exercise with core engagement"
-    },
-    {
-        id: "7",
-        name: "Pull-ups",
-        category: "Strength",
-        muscleGroups: ["Back", "Biceps"],
-        difficulty: "Advanced",
-        description: "Upper body pulling exercise"
-    },
-    {
-        id: "8",
-        name: "Deadlifts",
-        category: "Strength",
-        muscleGroups: ["Back", "Legs", "Core"],
-        difficulty: "Intermediate",
-        description: "Compound movement for posterior chain"
-    },
-    {
-        id: "9",
-        name: "Jump Rope",
-        category: "Cardio",
-        muscleGroups: ["Legs", "Shoulders"],
-        difficulty: "Beginner",
-        description: "Classic cardio exercise for endurance"
-    },
-    {
-        id: "10",
-        name: "Bicycle Crunches",
-        category: "Core",
-        muscleGroups: ["Core"],
-        difficulty: "Beginner",
-        description: "Dynamic ab exercise targeting obliques"
-    },
-    {
-        id: "11",
-        name: "Bench Press",
-        category: "Strength",
-        muscleGroups: ["Chest", "Triceps", "Shoulders"],
-        difficulty: "Intermediate",
-        description: "Classic chest building exercise"
-    },
-    {
-        id: "12",
-        name: "Russian Twists",
-        category: "Core",
-        muscleGroups: ["Core", "Obliques"],
-        difficulty: "Intermediate",
-        description: "Rotational core exercise"
-    }
-];
+// Use EXERCISES as reference to WORKOUTS_DATA from backend
+const EXERCISES = WORKOUTS_DATA || [];
 
 // State
 let currentView = 'browse';
@@ -125,9 +28,9 @@ let searchQuery = '';
 let categoryFilter = 'All';
 let currentRoutine = [];
 let routineName = '';
-let savedRoutines = [];
+let savedRoutines = ROUTINES_DATA || [];
 
-// Get unique categories
+// Get unique categories from database workouts
 const categories = ['All', ...new Set(EXERCISES.map(e => e.category))];
 
 // DOM Elements

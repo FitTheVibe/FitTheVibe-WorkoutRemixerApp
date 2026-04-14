@@ -703,6 +703,11 @@
 {% endblock %}
 {% block title %}FitTheVibe{% endblock %}
 {% block external_js %}
+<script>
+    // Load workout and routine data from backend
+    const WORKOUTS_DATA = {{ workouts_json | safe }};
+    const ROUTINES_DATA = {{ routines_json | safe }};
+</script>
 <script src="{{ url_for('static', path='js/app.js')}}"></script>
 {% endblock %}
 
