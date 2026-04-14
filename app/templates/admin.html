@@ -1,12 +1,767 @@
 {% extends "authenticated-base.html" %}
+{% block title %}Admin Dashboard — FitTheVibe{% endblock %}
 
-{% block external_js %}
-<script src="{{ url_for('static', path='js/app.js')}}"></script>
+{% block additional_styles %}
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Roboto:wght@400;500&display=swap');
+
+  :root {
+    --teal:       #0F766E;
+    --teal-light: #14B8A6;
+    --teal-bg:    #CCFBF1;
+    --green:      #22C55E;
+    --green-bg:   #DCFCE7;
+    --danger:     #EF4444;
+    --danger-bg:  #FEE2E2;
+    --amber:      #F59E0B;
+    --amber-bg:   #FEF3C7;
+    --text:       #111827;
+    --muted:      #6B7280;
+    --surface:    #F9FAFB;
+    --border:     #E5E7EB;
+    --white:      #FFFFFF;
+  }
+
+  body { font-family: 'Roboto', sans-serif; color: var(--text); }
+
+  /* ── Page header ── */
+  .admin-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.75rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .admin-header h1 {
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--teal);
+    margin: 0;
+  }
+  .admin-header p { margin: 0; color: var(--muted); font-size: 0.9rem; }
+
+  /* ── Stat cards ── */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.75rem;
+  }
+  .stat-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    padding: 1.1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+  }
+  .stat-icon {
+    width: 42px; height: 42px;
+    border-radius: 0.6rem;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.15rem; flex-shrink: 0;
+  }
+  .stat-icon.teal   { background: var(--teal-bg);   color: var(--teal); }
+  .stat-icon.green  { background: var(--green-bg);  color: #16A34A; }
+  .stat-icon.amber  { background: var(--amber-bg);  color: #B45309; }
+  .stat-value { font-family: 'Poppins', sans-serif; font-size: 1.5rem; font-weight: 700; line-height: 1; }
+  .stat-label { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+
+  /* ── Panel ── */
+  .panel {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 0.875rem;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+  }
+  .panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.4rem;
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+  .panel-title {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 1rem;
+    margin: 0;
+    color: var(--text);
+  }
+
+  /* ── Filter bar ── */
+  .filter-bar {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    padding: 0.85rem 1.4rem;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+  .filter-bar input,
+  .filter-bar select {
+    font-size: 0.82rem;
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    padding: 0.35rem 0.65rem;
+    background: var(--white);
+    color: var(--text);
+    outline: none;
+  }
+  .filter-bar input:focus,
+  .filter-bar select:focus { border-color: var(--teal-light); }
+  .filter-bar input { flex: 1; min-width: 180px; }
+
+  /* ── Table ── */
+  .workout-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+  .workout-table th {
+    background: var(--surface);
+    color: var(--muted);
+    font-weight: 500;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 0.65rem 1.1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  .workout-table td {
+    padding: 0.8rem 1.1rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  .workout-table tr:last-child td { border-bottom: none; }
+  .workout-table tr:hover td { background: #F0FDFA; }
+
+  /* ── Badges ── */
+  .badge-pill {
+    display: inline-block;
+    padding: 0.22rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 500;
+  }
+  .badge-muscle  { background: var(--teal-bg);   color: var(--teal); }
+  .badge-beg     { background: var(--green-bg);  color: #15803D; }
+  .badge-int     { background: var(--amber-bg);  color: #B45309; }
+  .badge-adv     { background: var(--danger-bg); color: #B91C1C; }
+  .badge-equip   { background: #F3F4F6;          color: #374151; }
+
+  /* ── Action buttons ── */
+  .btn-icon {
+    width: 30px; height: 30px;
+    border: none; border-radius: 0.4rem;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 0.85rem; cursor: pointer; transition: background 0.15s;
+  }
+  .btn-edit   { background: var(--teal-bg);   color: var(--teal); }
+  .btn-edit:hover   { background: #99F6E4; }
+  .btn-delete { background: var(--danger-bg); color: var(--danger); }
+  .btn-delete:hover { background: #FECACA; }
+
+  /* ── Primary button ── */
+  .btn-primary-ftv {
+    background: var(--teal);
+    color: white;
+    border: none;
+    border-radius: 0.55rem;
+    padding: 0.5rem 1.1rem;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 0.82rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: background 0.15s;
+  }
+  .btn-primary-ftv:hover { background: #0D6D65; }
+
+  /* ── Empty / loading states ── */
+  .empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--muted);
+  }
+  .empty-state .material-symbols-outlined { font-size: 2.5rem; display: block; margin-bottom: 0.5rem; opacity: 0.4; }
+
+  /* ── Modal backdrop ── */
+  .ftv-backdrop {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 1040;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+  .ftv-backdrop.open { display: flex; }
+
+  /* ── Modal card ── */
+  .ftv-modal {
+    background: var(--white);
+    border-radius: 1rem;
+    width: 100%;
+    max-width: 520px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    animation: modalIn 0.2s ease;
+  }
+  @keyframes modalIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+  .ftv-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.2rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .ftv-modal-header h5 {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--teal);
+    margin: 0;
+  }
+  .btn-close-ftv {
+    background: none; border: none; cursor: pointer;
+    color: var(--muted); font-size: 1.2rem; line-height: 1;
+    padding: 0.2rem 0.4rem; border-radius: 0.3rem;
+  }
+  .btn-close-ftv:hover { background: var(--surface); color: var(--text); }
+
+  .ftv-modal-body { padding: 1.4rem 1.5rem; }
+  .ftv-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.6rem;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--border);
+  }
+
+  /* ── Form fields ── */
+  .form-group { margin-bottom: 1rem; }
+  .form-group label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--muted);
+    margin-bottom: 0.3rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    padding: 0.55rem 0.75rem;
+    font-size: 0.875rem;
+    font-family: 'Roboto', sans-serif;
+    color: var(--text);
+    background: var(--white);
+    outline: none;
+    transition: border-color 0.15s;
+    box-sizing: border-box;
+  }
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus { border-color: var(--teal-light); box-shadow: 0 0 0 3px rgba(20,184,166,0.12); }
+  .form-group textarea { resize: vertical; min-height: 80px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+
+  .btn-cancel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 0.55rem;
+    padding: 0.5rem 1.1rem;
+    font-size: 0.82rem;
+    font-weight: 500;
+    cursor: pointer;
+    color: var(--text);
+    transition: background 0.15s;
+  }
+  .btn-cancel:hover { background: var(--border); }
+
+  /* ── Toast ── */
+  #ftv-toast {
+    position: fixed; bottom: 1.5rem; right: 1.5rem;
+    background: var(--teal); color: white;
+    padding: 0.7rem 1.2rem;
+    border-radius: 0.65rem;
+    font-size: 0.85rem;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    display: none;
+    z-index: 9999;
+    animation: slideUp 0.25s ease;
+    box-shadow: 0 4px 20px rgba(15,118,110,0.35);
+  }
+  @keyframes slideUp { from { transform: translateY(10px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+  /* ── Confirm dialog ── */
+  .confirm-body { text-align: center; padding: 1.5rem; }
+  .confirm-body .material-symbols-outlined { font-size: 2.5rem; color: var(--danger); display: block; margin-bottom: 0.75rem; }
+  .confirm-body p { color: var(--muted); font-size: 0.9rem; }
+  .btn-danger-ftv {
+    background: var(--danger);
+    color: white; border: none;
+    border-radius: 0.55rem;
+    padding: 0.5rem 1.1rem;
+    font-weight: 600; font-size: 0.82rem;
+    cursor: pointer; transition: background 0.15s;
+  }
+  .btn-danger-ftv:hover { background: #DC2626; }
+
+  /* ── Pagination ── */
+  .table-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1.4rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.8rem;
+    color: var(--muted);
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .page-btns { display: flex; gap: 0.35rem; }
+  .page-btn {
+    width: 28px; height: 28px;
+    border: 1px solid var(--border);
+    border-radius: 0.4rem;
+    background: var(--white);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.78rem;
+    color: var(--text);
+    transition: all 0.15s;
+  }
+  .page-btn:hover { border-color: var(--teal-light); color: var(--teal); }
+  .page-btn.active { background: var(--teal); border-color: var(--teal); color: white; }
+  .page-btn:disabled { opacity: 0.4; cursor: default; }
+</style>
 {% endblock %}
 
 
 {% block subpage_content %}
 
-   I am the admin page
+<div class="admin-header">
+  <div>
+    <h1>Admin Dashboard</h1>
+    <p>Manage workouts and system data for FitTheVibe</p>
+  </div>
+  <button class="btn-primary-ftv" onclick="openCreateModal()">
+    <span class="material-symbols-outlined" style="font-size:1rem;">add</span>
+    New Workout
+  </button>
+</div>
 
+<!-- Stat cards -->
+<div class="stat-grid" id="statGrid">
+  <div class="stat-card">
+    <div class="stat-icon teal"><span class="material-symbols-outlined">fitness_center</span></div>
+    <div><div class="stat-value" id="statTotal">—</div><div class="stat-label">Total Workouts</div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon green"><span class="material-symbols-outlined">category</span></div>
+    <div><div class="stat-value" id="statGroups">—</div><div class="stat-label">Muscle Groups</div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon amber"><span class="material-symbols-outlined">people</span></div>
+    <div><div class="stat-value" id="statUsers">—</div><div class="stat-label">Registered Users</div></div>
+  </div>
+</div>
+
+<!-- Workouts panel -->
+<div class="panel">
+  <div class="panel-header">
+    <h2 class="panel-title">Workouts</h2>
+    <span id="tableCount" style="font-size:0.8rem;color:var(--muted);">Loading...</span>
+  </div>
+  <div class="filter-bar">
+    <input type="text" id="searchInput" placeholder="Search by name…" oninput="applyFilters()">
+    <select id="filterMuscle" onchange="applyFilters()">
+      <option value="">All muscle groups</option>
+    </select>
+    <select id="filterDiff" onchange="applyFilters()">
+      <option value="">All difficulties</option>
+      <option value="beginner">Beginner</option>
+      <option value="intermediate">Intermediate</option>
+      <option value="advanced">Advanced</option>
+    </select>
+    <select id="filterEquip" onchange="applyFilters()">
+      <option value="">All equipment</option>
+    </select>
+  </div>
+
+  <div style="overflow-x:auto;">
+    <table class="workout-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Muscle Group</th>
+          <th>Difficulty</th>
+          <th>Equipment</th>
+          <th style="width:90px;">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="workoutTableBody">
+        <tr><td colspan="5"><div class="empty-state"><span class="material-symbols-outlined">hourglass_empty</span>Loading workouts…</div></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="table-footer">
+    <span id="pageInfo">—</span>
+    <div class="page-btns" id="pageBtns"></div>
+  </div>
+</div>
+
+
+<!-- ── Create / Edit Modal ── -->
+<div class="ftv-backdrop" id="workoutModal">
+  <div class="ftv-modal">
+    <div class="ftv-modal-header">
+      <h5 id="modalTitle">New Workout</h5>
+      <button class="btn-close-ftv" onclick="closeModal('workoutModal')">✕</button>
+    </div>
+    <div class="ftv-modal-body">
+      <div class="form-group">
+        <label>Name</label>
+        <input type="text" id="wName" placeholder="e.g. Barbell Squat">
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea id="wDesc" placeholder="Brief description of the exercise…"></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Muscle Group</label>
+          <input type="text" id="wMuscle" placeholder="e.g. legs">
+        </div>
+        <div class="form-group">
+          <label>Difficulty</label>
+          <select id="wDiff">
+            <option value="beginner">Beginner</option>
+            <option value="intermediate">Intermediate</option>
+            <option value="advanced">Advanced</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Equipment</label>
+        <input type="text" id="wEquip" placeholder="e.g. barbell, none, dumbbells">
+      </div>
+      <div id="modalError" style="color:var(--danger);font-size:0.82rem;display:none;margin-top:0.5rem;"></div>
+    </div>
+    <div class="ftv-modal-footer">
+      <button class="btn-cancel" onclick="closeModal('workoutModal')">Cancel</button>
+      <button class="btn-primary-ftv" id="modalSaveBtn" onclick="saveWorkout()">
+        <span class="material-symbols-outlined" style="font-size:0.95rem;">save</span>
+        Save Workout
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Delete Confirm Modal ── -->
+<div class="ftv-backdrop" id="deleteModal">
+  <div class="ftv-modal" style="max-width:380px;">
+    <div class="ftv-modal-header">
+      <h5>Delete Workout</h5>
+      <button class="btn-close-ftv" onclick="closeModal('deleteModal')">✕</button>
+    </div>
+    <div class="confirm-body">
+      <span class="material-symbols-outlined">delete_forever</span>
+      <strong id="deleteWorkoutName">this workout</strong>
+      <p>This will permanently remove the workout and cannot be undone.</p>
+    </div>
+    <div class="ftv-modal-footer">
+      <button class="btn-cancel" onclick="closeModal('deleteModal')">Cancel</button>
+      <button class="btn-danger-ftv" id="confirmDeleteBtn">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Toast ── -->
+<div id="ftv-toast"></div>
+
+{% endblock %}
+
+
+{% block subpage_scripts %}
+<script>
+  // ── State ──────────────────────────────────────────────────────
+  let allWorkouts = [];
+  let filtered   = [];
+  let editingId   = null;
+  const PAGE_SIZE = 15;
+  let currentPage = 1;
+
+  // ── Boot ───────────────────────────────────────────────────────
+  document.addEventListener('DOMContentLoaded', () => {
+    loadWorkouts();
+    loadUserCount();
+  });
+
+  async function loadWorkouts() {
+    try {
+      const res = await fetch('/api/workouts?limit=200');
+      if (!res.ok) throw new Error();
+      allWorkouts = await res.json();
+      populateFilterOptions();
+      applyFilters();
+      updateStats();
+    } catch {
+      document.getElementById('workoutTableBody').innerHTML =
+        `<tr><td colspan="5"><div class="empty-state"><span class="material-symbols-outlined">error</span>Failed to load workouts.</div></td></tr>`;
+    }
+  }
+
+  async function loadUserCount() {
+    try {
+      const res = await fetch('/api/users');
+      if (!res.ok) return;
+      const users = await res.json();
+      document.getElementById('statUsers').textContent = users.length;
+    } catch { /* non-critical */ }
+  }
+
+  // ── Filters ────────────────────────────────────────────────────
+  function populateFilterOptions() {
+    const muscles = [...new Set(allWorkouts.map(w => w.muscle_group).filter(Boolean))].sort();
+    const equips  = [...new Set(allWorkouts.map(w => w.equipment).filter(Boolean))].sort();
+
+    const mSel = document.getElementById('filterMuscle');
+    muscles.forEach(m => mSel.add(new Option(capitalise(m), m)));
+
+    const eSel = document.getElementById('filterEquip');
+    equips.forEach(e => eSel.add(new Option(capitalise(e), e)));
+  }
+
+  function applyFilters() {
+    const q  = document.getElementById('searchInput').value.toLowerCase();
+    const mg = document.getElementById('filterMuscle').value;
+    const df = document.getElementById('filterDiff').value;
+    const eq = document.getElementById('filterEquip').value;
+
+    filtered = allWorkouts.filter(w =>
+      (!q  || w.name.toLowerCase().includes(q)) &&
+      (!mg || w.muscle_group === mg) &&
+      (!df || w.difficulty === df) &&
+      (!eq || w.equipment === eq)
+    );
+    currentPage = 1;
+    renderTable();
+  }
+
+  // ── Table render ───────────────────────────────────────────────
+  function renderTable() {
+    const tbody = document.getElementById('workoutTableBody');
+    const total = filtered.length;
+    const start = (currentPage - 1) * PAGE_SIZE;
+    const slice = filtered.slice(start, start + PAGE_SIZE);
+
+    document.getElementById('tableCount').textContent =
+      total === allWorkouts.length ? `${total} workouts` : `${total} of ${allWorkouts.length}`;
+
+    if (!slice.length) {
+      tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state">
+        <span class="material-symbols-outlined">search_off</span>No workouts match your filters.</div></td></tr>`;
+    } else {
+      tbody.innerHTML = slice.map(w => `
+        <tr>
+          <td><strong>${esc(w.name)}</strong><br><small style="color:var(--muted);font-size:0.75rem;">${esc(w.description).substring(0,60)}${w.description.length>60?'…':''}</small></td>
+          <td><span class="badge-pill badge-muscle">${esc(capitalise(w.muscle_group))}</span></td>
+          <td><span class="badge-pill ${diffClass(w.difficulty)}">${esc(capitalise(w.difficulty))}</span></td>
+          <td><span class="badge-pill badge-equip">${esc(w.equipment)}</span></td>
+          <td style="white-space:nowrap;">
+            <button class="btn-icon btn-edit" title="Edit" onclick="openEditModal(${w.id})">
+              <span class="material-symbols-outlined" style="font-size:0.95rem;">edit</span>
+            </button>
+            <button class="btn-icon btn-delete" title="Delete" onclick="openDeleteConfirm(${w.id}, '${esc(w.name).replace(/'/g,"\\'")}')">
+              <span class="material-symbols-outlined" style="font-size:0.95rem;">delete</span>
+            </button>
+          </td>
+        </tr>`).join('');
+    }
+
+    renderPagination(total);
+  }
+
+  function renderPagination(total) {
+    const pages = Math.ceil(total / PAGE_SIZE);
+    const info  = document.getElementById('pageInfo');
+    const btns  = document.getElementById('pageBtns');
+    const start = (currentPage - 1) * PAGE_SIZE + 1;
+    const end   = Math.min(currentPage * PAGE_SIZE, total);
+
+    info.textContent = total ? `Showing ${start}–${end} of ${total}` : '';
+    btns.innerHTML = '';
+    if (pages <= 1) return;
+
+    const prev = Object.assign(document.createElement('button'), { className:'page-btn', textContent:'‹', disabled: currentPage===1 });
+    prev.onclick = () => { currentPage--; renderTable(); };
+    btns.appendChild(prev);
+
+    for (let p = 1; p <= pages; p++) {
+      const b = Object.assign(document.createElement('button'), { className:`page-btn${p===currentPage?' active':''}`, textContent: p });
+      b.onclick = (pg => () => { currentPage = pg; renderTable(); })(p);
+      btns.appendChild(b);
+    }
+
+    const next = Object.assign(document.createElement('button'), { className:'page-btn', textContent:'›', disabled: currentPage===pages });
+    next.onclick = () => { currentPage++; renderTable(); };
+    btns.appendChild(next);
+  }
+
+  // ── Stats ──────────────────────────────────────────────────────
+  function updateStats() {
+    document.getElementById('statTotal').textContent  = allWorkouts.length;
+    const groups = new Set(allWorkouts.map(w => w.muscle_group).filter(Boolean));
+    document.getElementById('statGroups').textContent = groups.size;
+  }
+
+  // ── Create modal ───────────────────────────────────────────────
+  function openCreateModal() {
+    editingId = null;
+    document.getElementById('modalTitle').textContent = 'New Workout';
+    document.getElementById('modalSaveBtn').innerHTML =
+      '<span class="material-symbols-outlined" style="font-size:0.95rem;">add</span> Create Workout';
+    clearForm();
+    openModal('workoutModal');
+  }
+
+  // ── Edit modal ─────────────────────────────────────────────────
+  function openEditModal(id) {
+    const w = allWorkouts.find(x => x.id === id);
+    if (!w) return;
+    editingId = id;
+    document.getElementById('modalTitle').textContent = 'Edit Workout';
+    document.getElementById('modalSaveBtn').innerHTML =
+      '<span class="material-symbols-outlined" style="font-size:0.95rem;">save</span> Save Changes';
+    document.getElementById('wName').value   = w.name;
+    document.getElementById('wDesc').value   = w.description;
+    document.getElementById('wMuscle').value = w.muscle_group;
+    document.getElementById('wDiff').value   = w.difficulty;
+    document.getElementById('wEquip').value  = w.equipment;
+    document.getElementById('modalError').style.display = 'none';
+    openModal('workoutModal');
+  }
+
+  // ── Save (create or update) ────────────────────────────────────
+  async function saveWorkout() {
+    const body = {
+      name:         document.getElementById('wName').value.trim(),
+      description:  document.getElementById('wDesc').value.trim(),
+      muscle_group: document.getElementById('wMuscle').value.trim().toLowerCase(),
+      difficulty:   document.getElementById('wDiff').value,
+      equipment:    document.getElementById('wEquip').value.trim().toLowerCase(),
+    };
+
+    const errEl = document.getElementById('modalError');
+    if (!body.name || !body.description || !body.muscle_group || !body.equipment) {
+      errEl.textContent = 'Please fill in all fields.';
+      errEl.style.display = 'block';
+      return;
+    }
+    errEl.style.display = 'none';
+
+    const url    = editingId ? `/api/workouts/${editingId}` : '/api/workouts';
+    const method = editingId ? 'PATCH' : 'POST';
+
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        errEl.textContent = d.detail || 'Something went wrong.';
+        errEl.style.display = 'block';
+        return;
+      }
+      const saved = await res.json();
+      if (editingId) {
+        allWorkouts = allWorkouts.map(w => w.id === editingId ? saved : w);
+        showToast('Workout updated ✓');
+      } else {
+        allWorkouts.unshift(saved);
+        showToast('Workout created ✓');
+      }
+      updateStats();
+      applyFilters();
+      closeModal('workoutModal');
+    } catch {
+      errEl.textContent = 'Network error. Please try again.';
+      errEl.style.display = 'block';
+    }
+  }
+
+  // ── Delete confirm ─────────────────────────────────────────────
+  function openDeleteConfirm(id, name) {
+    document.getElementById('deleteWorkoutName').textContent = name;
+    document.getElementById('confirmDeleteBtn').onclick = () => deleteWorkout(id);
+    openModal('deleteModal');
+  }
+
+  async function deleteWorkout(id) {
+    try {
+      const res = await fetch(`/api/workouts/${id}`, { method: 'DELETE' });
+      if (!res.ok && res.status !== 204) throw new Error();
+      allWorkouts = allWorkouts.filter(w => w.id !== id);
+      updateStats();
+      applyFilters();
+      closeModal('deleteModal');
+      showToast('Workout deleted');
+    } catch {
+      showToast('Delete failed — try again', true);
+    }
+  }
+
+  // ── Helpers ────────────────────────────────────────────────────
+  function openModal(id)  { document.getElementById(id).classList.add('open'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+  function clearForm() {
+    ['wName','wDesc','wMuscle','wEquip'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('wDiff').value = 'beginner';
+    document.getElementById('modalError').style.display = 'none';
+  }
+
+  function showToast(msg, err = false) {
+    const t = document.getElementById('ftv-toast');
+    t.textContent = msg;
+    t.style.background = err ? 'var(--danger)' : 'var(--teal)';
+    t.style.display = 'block';
+    setTimeout(() => { t.style.display = 'none'; }, 2800);
+  }
+
+  function esc(str) {
+    return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function capitalise(str) {
+    return str ? str.charAt(0).toUpperCase() + str.slice(1) : '';
+  }
+
+  function diffClass(d) {
+    return d === 'beginner' ? 'badge-beg' : d === 'intermediate' ? 'badge-int' : 'badge-adv';
+  }
+
+  // Close modals on backdrop click
+  document.querySelectorAll('.ftv-backdrop').forEach(el => {
+    el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
+  });
+</script>
 {% endblock %}

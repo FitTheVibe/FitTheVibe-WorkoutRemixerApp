@@ -19,7 +19,7 @@ async def list_workouts(
     equipment: Optional[str] = Query(default=None),
     search: Optional[str] = Query(default=None),
     page: int = Query(default=1, ge=1),
-    limit: int = Query(default=20, le=100),
+    limit: int = Query(default=20, le=200),
 ):
     service = WorkoutService(WorkoutRepository(db))
     workouts, _ = service.get_all_workouts(
