@@ -5,6 +5,7 @@ from app.dependencies.session import SessionDep
 from app.dependencies.auth import AuthDep, IsUserLoggedIn, get_current_user, is_admin
 from app.repositories.workout_repository import WorkoutRepository
 from app.repositories.routine_repository import RoutineRepository
+from app.repositories.routine_workout_repository import RoutineWorkoutRepository
 from app.services.workout_service import WorkoutService
 from app.services.routine_service import RoutineService
 from . import router, templates
@@ -26,7 +27,7 @@ async def user_home_view(
     # Fetch user routines from database
     routine_service = RoutineService(
         RoutineRepository(db),
-        None  # We'll fetch routine_workouts separately if needed
+        RoutineWorkoutRepository(db)
     )
     routines, _ = routine_service.get_user_routines(user.id, page=1, limit=100)
 

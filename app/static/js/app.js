@@ -120,6 +120,11 @@ function getFilteredExercises() {
     });
 }
 
+// Get a workout by ID from EXERCISES
+function getWorkoutByName(name) {
+    return EXERCISES.find(e => e.name === name);
+}
+
 // Render Exercises
 function renderExercises() {
     const filtered = getFilteredExercises();
@@ -166,7 +171,7 @@ function renderExercises() {
 function addToRoutine(exerciseId) {
     const exercise = EXERCISES.find(e => e.id === exerciseId);
     if (exercise) {
-        currentRoutine.push(exercise);
+        currentRoutine.push({...exercise, workoutId: parseInt(exerciseId)});
         switchView('create');
         renderCurrentRoutine();
     }
@@ -227,30 +232,133 @@ function renderCurrentRoutine() {
     }
 }
 
-// Save Routine
-function saveRoutine() {
+// API: Create Routine
+async function createRoutineAPI(name, description) {
+    try {
+        const response = await fetch('/api/routines', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                name,
+                description: description || "",
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to create routine: ${response.statusText}`);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('Error creating routine:', error);
+        alert('Failed to create routine. Please try again.');
+        throw error;
+    }
+}
+
+// API: Add Workout to Routine
+async function addWorkoutToRoutineAPI(routineId, workoutId, position, sets = 3, reps = 10) {
+    try {
+        const response = await fetch(`/api/routines/${routineId}/workouts`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                workout_id: workoutId,
+                position,
+                sets,
+                reps,
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to add workout: ${response.statusText}`);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('Error adding workout to routine:', error);
+        throw error;
+    }
+}
+
+// API: Delete Routine
+async function deleteRoutineAPI(routineId) {
+    try {
+        const response = await fetch(`/api/routines/${routineId}`, {
+            method: 'DELETE',
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to delete routine: ${response.statusText}`);
+        }
+    } catch (error) {
+        console.error('Error deleting routine:', error);
+        alert('Failed to delete routine. Please try again.');
+        throw error;
+    }
+}
+
+// API: Fetch Routines for Current User
+async function fetchRoutinesAPI() {
+    try {
+        const response = await fetch('/api/routines');
+
+        if (!response.ok) {
+            throw new Error(`Failed to fetch routines: ${response.statusText}`);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching routines:', error);
+        return [];
+    }
+}
+
+// Save Routine (creates in database)
+async function saveRoutine() {
     if (currentRoutine.length === 0 || !routineName.trim()) return;
 
-    const newRoutine = {
-        id: Date.now().toString(),
-        name: routineName,
-        exercises: [...currentRoutine],
-        createdAt: new Date()
-    };
+    try {
+        // Create routine in database
+        const newRoutine = await createRoutineAPI(routineName, '');
 
-    savedRoutines.push(newRoutine);
-    currentRoutine = [];
-    routineName = '';
-    routineNameInput.value = '';
+        // Add each workout to the routine
+        for (let i = 0; i < currentRoutine.length; i++) {
+            const exercise = currentRoutine[i];
+            await addWorkoutToRoutineAPI(newRoutine.id, parseInt(exercise.id), i);
+        }
 
-    renderRoutines();
-    switchView('routines');
+        // Refresh the routines list
+        savedRoutines = await fetchRoutinesAPI();
+
+        // Reset form
+        currentRoutine = [];
+        routineName = '';
+        routineNameInput.value = '';
+
+        renderRoutines();
+        switchView('routines');
+        alert('Routine saved successfully!');
+    } catch (error) {
+        console.error('Error saving routine:', error);
+    }
 }
 
 // Delete Routine
-function deleteRoutine(routineId) {
-    savedRoutines = savedRoutines.filter(r => r.id !== routineId);
-    renderRoutines();
+async function deleteRoutine(routineId) {
+    if (!confirm('Are you sure you want to delete this routine?')) return;
+
+    try {
+        await deleteRoutineAPI(routineId);
+        savedRoutines = await fetchRoutinesAPI();
+        renderRoutines();
+    } catch (error) {
+        console.error('Error deleting routine:', error);
+    }
 }
 
 // Render Routines
@@ -268,13 +376,14 @@ function renderRoutines() {
         `;
     } else {
         routinesGrid.innerHTML = savedRoutines.map(routine => {
-            const categories = [...new Set(routine.exercises.map(e => e.category))];
-            const totalExercises = routine.exercises.length;
+            const routineExercises = routine.routine_workouts || [];
+            const categories = [...new Set(routineExercises.map(rw => rw.workout.category))];
+            const totalExercises = routineExercises.length;
 
             return `
                 <div class="routine-card">
                     <div class="routine-preview">
-                        ${routine.exercises.slice(0, 3).map(() => `
+                        ${routineExercises.slice(0, 3).map(() => `
                             <div class="routine-preview-item">
                                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
@@ -297,7 +406,7 @@ function renderRoutines() {
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
                                     </svg>
                                 </button>
-                                <button class="icon-btn btn-delete" onclick="deleteRoutine('${routine.id}')" title="Delete routine">
+                                <button class="icon-btn btn-delete" onclick="deleteRoutine(${routine.id})" title="Delete routine">
                                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                     </svg>
@@ -305,10 +414,10 @@ function renderRoutines() {
                             </div>
                         </div>
                         <div class="routine-exercises">
-                            ${routine.exercises.map((exercise, idx) => `
+                            ${routineExercises.map((rw, idx) => `
                                 <div class="routine-exercise-item">
                                     <span class="routine-exercise-number">${idx + 1}.</span>
-                                    <span class="routine-exercise-name">${exercise.name}</span>
+                                    <span class="routine-exercise-name">${rw.workout.name}</span>
                                 </div>
                             `).join('')}
                         </div>
