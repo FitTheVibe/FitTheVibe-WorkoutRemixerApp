@@ -19,6 +19,9 @@
         transition: all 0.3s;
         background: #F3F4F6;
         color: #fff;
+        position: sticky;
+        top: 0;
+        z-index: 5;
     }
 
     #sidebar.collapsed {
@@ -57,6 +60,9 @@
 
     .navbar {
         border-bottom: 1px solid #dee2e6;
+        position: sticky;
+        top: 0;
+        z-index: 10;
     }
 </style>
 
@@ -69,7 +75,9 @@
 <div id="wrapper">
 
     <nav id="sidebar" class="p-3 d-flex flex-column vh-100">
-        <h4 class="text-white mb-4 text-center py-4">FitTheVibe</h4>
+        <div class="mb-4 text-center py-4">
+            <img src="{{ url_for('static', path='img/ftv-logo.png') }}" alt="FitTheVibe" style="max-height: 80px;">
+        </div>
 
         <ul class="nav nav-pills flex-column gap-2 flex-grow-1">
             <li class="nav-item">
@@ -93,14 +101,13 @@
             <button class="btn btn-outline-secondary" id="menu-toggle">
                 <span class="material-symbols-outlined md-dark">menu</span>
             </button>
-within the navbar, add the logo text and the welcome message on the right side
-
-            <h1 class="logo-text">FitTheVibe</h1>
+            <img src="{{ url_for('static', path='img/ftv-logo.svg') }}" alt="FitTheVibe" style="max-height: 30px;" id="navbar-logo">
+            
 
             <div class="ms-auto d-flex align-items-center gap-3">
                 <span class="fw-semibold">Welcome, {{user.username}}</span>
             </div>
-             <button class="nav-btn active" data-view="browse">Browse</button>
+             <button class="nav-btn active" data-view="browse" style="margin-left: 2rem;">Browse</button>
                 <button class="nav-btn" data-view="create">Create</button>
                 <button class="nav-btn" data-view="routines">My Routines</button>
         </nav>
@@ -111,6 +118,7 @@ within the navbar, add the logo text and the welcome message on the right side
                     <div class="alert alert-{{ message.type }}" role="alert">{{ message.message }}</div>
                 {% endfor %}
             </div>
+
         </div>
 
 
