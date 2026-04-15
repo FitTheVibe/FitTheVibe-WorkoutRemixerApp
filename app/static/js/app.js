@@ -133,7 +133,9 @@ function renderExercises() {
     exerciseGrid.innerHTML = filtered.map(exercise => `
         <div class="exercise-card" onclick="viewExerciseDetail('${exercise.id}')">
             <div class="exercise-image">
-           <img src="${exercise.demo_img_url}" alt="${exercise.name}" style="width: 100%; height: 100%; object-fit: cover;">
+                <img src="${exercise.demo_img_url}" alt="${exercise.name}"
+                     style="width: 100%; height: 100%; object-fit: cover;"
+                     onerror="this.parentElement.innerHTML='<div class=\"exercise-image-placeholder\"><div class=\"exercise-image-icon\"><svg fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z\"/></svg></div><span class=\"placeholder-text\">No image</span></div>'">
             </div>
             <div class="exercise-content">
                 <div class="exercise-header">
@@ -470,11 +472,8 @@ function renderRoutines() {
             return `
                 <div class="routine-card">
                     <div class="routine-preview">
-                        ${routineExercises.slice(0, 3).map(() => `
-                            <div class="routine-preview-item">
-                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                </svg>
+                        ${routineExercises.slice(0, 3).map((rw) => `
+                            <div class="routine-preview-item" style="background-image: url('/${rw.workout.demo_img_url}'); background-size: cover; background-position: center;">
                             </div>
                         `).join('')}
                         ${totalExercises < 3 ? Array(3 - totalExercises).fill(0).map(() => `

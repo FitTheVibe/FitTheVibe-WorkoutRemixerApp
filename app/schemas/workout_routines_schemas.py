@@ -28,6 +28,7 @@ class WorkoutResponse(SQLModel):
     muscle_group: str
     difficulty: str
     equipment: str
+    demo_img_url: str
     created_by: Optional[int]
 
 

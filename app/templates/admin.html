@@ -348,6 +348,35 @@
   .page-btn:hover { border-color: var(--teal-light); color: var(--teal); }
   .page-btn.active { background: var(--teal); border-color: var(--teal); color: white; }
   .page-btn:disabled { opacity: 0.4; cursor: default; }
+
+  /* ── Photo preview ── */
+  #photoPreview {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .photo-preview-img {
+    width: 100%;
+    max-width: 150px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border);
+  }
+  .photo-remove-btn {
+    background: var(--danger-bg);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: var(--danger);
+    padding: 0.35rem 0.65rem;
+    border-radius: 0.35rem;
+    font-size: 0.75rem;
+    cursor: pointer;
+    align-self: flex-start;
+    transition: background 0.15s;
+  }
+  .photo-remove-btn:hover {
+    background: rgba(239, 68, 68, 0.2);
+  }
 </style>
 {% endblock %}
 
@@ -462,8 +491,10 @@
         <input type="text" id="wEquip" placeholder="e.g. barbell, none, dumbbells">
       </div>
       <div class="form-group">
-        <label>Picture URL</label>
-        <input type="url" id="wPictureUrl" placeholder="https://example.com/image.jpg">
+        <label>Exercise Photo</label>
+        <input type="file" id="wPhotoFile" accept="image/*">
+        <small style="color:var(--muted);display:block;margin-top:0.3rem;">Accepted formats: JPEG, PNG, WebP, GIF (Max 5MB)</small>
+        <div id="photoPreview" style="margin-top:0.75rem;"></div>
       </div>
       <div id="modalError" style="color:var(--danger);font-size:0.82rem;display:none;margin-top:0.5rem;"></div>
     </div>
@@ -508,6 +539,7 @@
   let allWorkouts = [];
   let filtered   = [];
   let editingId   = null;
+  let uploadedImageUrl = null;
   const PAGE_SIZE = 15;
   let currentPage = 1;
 
@@ -515,6 +547,7 @@
   document.addEventListener('DOMContentLoaded', () => {
     loadWorkouts();
     loadUserCount();
+    setupFileUploadListener();
   });
 
   async function loadWorkouts() {
@@ -659,6 +692,17 @@
     document.getElementById('wDiff').value   = w.difficulty;
     document.getElementById('wEquip').value  = w.equipment;
     document.getElementById('modalError').style.display = 'none';
+
+    // Load existing image
+    uploadedImageUrl = w.demo_img_url;
+    if (w.demo_img_url) {
+      const preview = document.getElementById('photoPreview');
+      preview.innerHTML = `
+        <img src="${w.demo_img_url}" class="photo-preview-img">
+        <button type="button" class="photo-remove-btn" onclick="clearPhotoUpload()">Replace Photo</button>
+      `;
+    }
+
     openModal('workoutModal');
   }
 
@@ -670,11 +714,12 @@
       muscle_group: document.getElementById('wMuscle').value.trim().toLowerCase(),
       difficulty:   document.getElementById('wDiff').value,
       equipment:    document.getElementById('wEquip').value.trim().toLowerCase(),
+      demo_img_url: uploadedImageUrl || '',
     };
 
     const errEl = document.getElementById('modalError');
-    if (!body.name || !body.description || !body.muscle_group || !body.equipment) {
-      errEl.textContent = 'Please fill in all fields.';
+    if (!body.name || !body.description || !body.muscle_group || !body.equipment || !body.demo_img_url) {
+      errEl.textContent = 'Please fill in all fields, including uploading a photo.';
       errEl.style.display = 'block';
       return;
     }
@@ -737,10 +782,70 @@
   function openModal(id)  { document.getElementById(id).classList.add('open'); }
   function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
+  // ── File upload handlers ────────────────────────────────────────
+  function setupFileUploadListener() {
+    const fileInput = document.getElementById('wPhotoFile');
+    fileInput.addEventListener('change', handleFileSelect);
+  }
+
+  async function handleFileSelect(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Show preview
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const preview = document.getElementById('photoPreview');
+      preview.innerHTML = `
+        <img src="${event.target.result}" class="photo-preview-img">
+        <button type="button" class="photo-remove-btn" onclick="clearPhotoUpload()">Remove Photo</button>
+      `;
+    };
+    reader.readAsDataURL(file);
+
+    // Upload file
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const res = await fetch('/api/workouts/upload', {
+        method: 'POST',
+        body: formData
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        console.error('Upload error:', err);
+        showToast(err.detail || 'Upload failed', true);
+        clearPhotoUpload();
+        return;
+      }
+      const data = await res.json();
+      console.log('Upload response:', data);
+      uploadedImageUrl = data.url;
+      if (uploadedImageUrl) {
+        showToast('Photo uploaded ✓');
+      } else {
+        console.error('No URL in response');
+        showToast('Upload failed: no URL returned', true);
+      }
+    } catch (error) {
+      console.error('Upload exception:', error);
+      showToast('Upload failed: ' + error.message, true);
+      clearPhotoUpload();
+    }
+  }
+
+  function clearPhotoUpload() {
+    uploadedImageUrl = null;
+    document.getElementById('wPhotoFile').value = '';
+    document.getElementById('photoPreview').innerHTML = '';
+  }
+
   function clearForm() {
     ['wName','wDesc','wMuscle','wEquip'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('wDiff').value = 'beginner';
     document.getElementById('modalError').style.display = 'none';
+    clearPhotoUpload();
   }
 
   function showToast(msg, err = false) {

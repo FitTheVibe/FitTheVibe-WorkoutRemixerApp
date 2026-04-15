@@ -222,6 +222,26 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            overflow: hidden;
+        }
+
+        .exercise-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .exercise-image img[alt] {
+            background: #f1f5f9;
+        }
+
+        .exercise-image-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
         }
 
         .exercise-image-icon {
