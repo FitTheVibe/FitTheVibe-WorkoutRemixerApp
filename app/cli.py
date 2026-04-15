@@ -1,5 +1,6 @@
 import typer
 from sqlmodel import select
+from tabulate import tabulate
 from app.database import create_db_and_tables, get_cli_session, drop_all
 from app.models.user import User
 from app.models.workout import Workout

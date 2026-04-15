@@ -1,4 +1,3 @@
-
 async function getUserData(){
     const response = await fetch('/api/users');
     return response.json();
@@ -129,7 +128,8 @@ function getWorkoutByName(name) {
 // Render Exercises
 function renderExercises() {
     const filtered = getFilteredExercises();
-
+    // console.log("Current Exercise Data:", filtered[0]);
+    
     exerciseGrid.innerHTML = filtered.map(exercise => `
         <div class="exercise-card" onclick="viewExerciseDetail('${exercise.id}')">
             <div class="exercise-image">
@@ -161,6 +161,7 @@ function renderExercises() {
             </div>
         </div>
     `).join('');
+    
 }
 
 // Add Exercise to Routine
@@ -207,14 +208,14 @@ function renderCurrentRoutine() {
                             <div style="display: flex; align-items: center; gap: 5px;">
                                 <label style="font-size: 0.8rem; color: #64748b;">Sets:</label>
                                 <input type="number" value="${exercise.sets || 3}" 
-                                    onchange="updateExerciseDetail(${index}, 'sets', this.value)"
-                                    style="width: 45px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 5px;">
+                                onchange="updateExerciseDetail(${index}, 'sets', this.value)"
+                                style="width: 70px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 5px;">
                             </div>
                             <div style="display: flex; align-items: center; gap: 5px;">
                                 <label style="font-size: 0.8rem; color: #64748b;">Reps:</label>
                                 <input type="number" value="${exercise.reps || 10}" 
-                                    onchange="updateExerciseDetail(${index}, 'reps', this.value)"
-                                    style="width: 45px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 5px;">
+                                onchange="updateExerciseDetail(${index}, 'reps', this.value)"
+                                style="width: 70px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 5px;">
                             </div>
                         </div>
                     </div>
@@ -695,4 +696,4 @@ document.addEventListener('click', (e) => {
 // Initialize app
 init();
 
-main();
+// main();

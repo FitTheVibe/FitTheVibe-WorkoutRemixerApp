@@ -41,6 +41,7 @@ async def user_home_view(
             "difficulty": w.difficulty.capitalize(),
             "description": w.description,
             "equipment": w.equipment,
+            "demo_img_url": w.demo_img_url,
         }
         for w in workouts
     ]
@@ -70,6 +71,7 @@ async def user_home_view(
                         "muscle_group": rw.workout.muscle_group,
                         "difficulty": rw.workout.difficulty,
                         "equipment": rw.workout.equipment,
+                        # "demo_img_url": rw.workout.demo_img_url,
                     }
                 }
                 for rw in routine_workouts if rw.workout is not None
