@@ -86,12 +86,34 @@ function switchView(view) {
         v.classList.remove('active');
     });
 
-    document.getElementById(`${view}-view`).classList.add('active');
+    const targetView = document.getElementById(`${view}-view`);
+    if (targetView) targetView.classList.add('active');
 
     if (view === 'create') {
         renderCurrentRoutine();
     }
+
+    // FIX HERE: Use 'view' instead of 'viewId'
+    if (view !== 'browse') {
+        isAddingToExisting = false;
+    }
 }
+
+
+let isAddingToExisting = false;
+
+function startAddingToExisting() {
+    isAddingToExisting = true;
+    const tempId = window.editingRoutineId; 
+    
+    closeEditRoutineModal();
+    switchView('browse');
+    
+    // Re-assign just in case switchView tried to wipe it
+    window.editingRoutineId = tempId; 
+    showToast("Select an exercise to add");
+}
+
 
 // Render Filter Buttons
 function renderFilterButtons() {
@@ -164,13 +186,67 @@ function renderExercises() {
     
 }
 
+let tempExercises = []; // Global variable to track exercises while editing
+
+function removeExerciseFromEditList(exerciseId) {
+    // 1. Filter out the exercise from our temporary list
+    tempExercises = tempExercises.filter(ex => String(ex.id) !== String(exerciseId));
+    
+    // 2. Immediately re-render the list in the modal
+    renderEditExercisesList();
+    
+    // 3. Show a small feedback toast (optional)
+    showToast("Exercise removed from list");
+}
+
+function renderEditExercisesList() {
+    const listContainer = document.getElementById('editRoutineExercisesList');
+    
+    if (tempExercises.length === 0) {
+        listContainer.innerHTML = '<p style="color: #64748b; font-size: 0.9rem;">No exercises in this routine.</p>';
+        return;
+    }
+
+    listContainer.innerHTML = tempExercises.map(ex => `
+        <div class="edit-exercise-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #f8fafc; border-radius: 8px; margin-bottom: 8px;">
+            <div>
+                <div style="font-weight: 600;">${ex.name}</div>
+                <div style="font-size: 0.8rem; color: #64748b;">${ex.category || ex.muscle_group || 'Exercise'}</div>
+            </div>
+            <button type="button" onclick="removeExerciseFromEditList('${ex.id}')" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 5px;">
+                <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+    `).join('');
+}
+
 // Add Exercise to Routine
-function addToRoutine(exerciseId) {
-    const exercise = EXERCISES.find(e => e.id === exerciseId);
-    if (exercise) {
-        currentRoutine.push({...exercise, workoutId: parseInt(exerciseId)});
-        switchView('create');
-        renderCurrentRoutine();
+async function addToRoutine(exerciseId) {
+    if (isAddingToExisting) {
+        // Adding to an existing routine in the database
+        try {
+            const routineId = window.editingRoutineId;
+            // You can use your existing API call here
+            await addWorkoutToRoutineAPI(routineId, exerciseId, 0, 3, 10);
+            
+            // Cleanup and go back to the edit view
+            isAddingToExisting = false;
+            savedRoutines = await fetchRoutinesAPI(); 
+            editRoutine(routineId); // Re-open the edit modal to show the new item
+            showToast("Added to routine!");
+        } catch (error) {
+            showToast("Failed to add exercise", true);
+        }
+    } else {
+        //  Your original logic for building a NEW routine
+        const exercise = EXERCISES.find(e => e.id === exerciseId);
+        if (exercise) {
+            currentRoutine.push({...exercise, workoutId: parseInt(exerciseId)});
+            switchView('create');
+            renderCurrentRoutine();
+        }
     }
 }
 
@@ -382,10 +458,10 @@ function showToast(message) {
     toast.innerText = message;
     toast.classList.remove('toast-hidden');
 
-    // Hide after 3 seconds
+    // Hide after 1 second
     setTimeout(() => {
         toast.classList.add('toast-hidden');
-    }, 3000);
+    }, 1000);
 }
 
 // Save Routine (creates in database)
@@ -465,7 +541,7 @@ function renderRoutines() {
     } else {
         routinesGrid.innerHTML = savedRoutines.map(routine => {
             const routineExercises = routine.routine_workouts || [];
-            const categories = [...new Set(routineExercises.map(rw => rw.workout.category))];
+            const categories = [...new Set(routineExercises.filter(rw => rw.workout).map(rw => rw.workout.category))];
             const totalExercises = routineExercises.length;
 
             return `
@@ -502,7 +578,7 @@ function renderRoutines() {
                             </div>
                         </div>
                         <div class="routine-exercises">
-                            ${routineExercises.map((rw, idx) => `
+                            ${routineExercises.filter(rw => rw.workout).map((rw, idx) => `
                                 <div class="routine-exercise-item">
                                     <span class="routine-exercise-number">${idx + 1}.</span>
                                     <span class="routine-exercise-name">${rw.workout.name}</span>
@@ -597,10 +673,33 @@ function closeEditRoutineModal() {
     window.editingRoutineId = null;
 }
 
-// Remove exercise from edit form (local only)
-function removeExerciseFromEdit(rwId) {
-    const exerciseItem = document.querySelector(`.edit-routine-exercise-item [data-rw-id="${rwId}"]`).closest('.edit-routine-exercise-item');
-    exerciseItem.remove();
+// Remove exercise from database and UI
+async function removeExerciseFromEdit(rwId) {
+    if (!confirm('Remove this exercise from the routine?')) return;
+
+    try {
+        const routineId = window.editingRoutineId;
+        //  Call the API to actually delete it
+        const response = await fetch(`/api/routines/${routineId}/workouts/${rwId}`, {
+            method: 'DELETE',
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to delete the exercise');
+        }
+
+        //  Remove the element from the UI
+        const exerciseItem = document.querySelector(`.edit-routine-exercise-item [data-rw-id="${rwId}"]`).closest('.edit-routine-exercise-item');
+        if (exerciseItem) exerciseItem.remove();
+
+        //  Refresh the background data
+        savedRoutines = await fetchRoutinesAPI();
+        showToast("Removed successfully");
+
+    } catch (error) {
+        console.error('Error removing exercise:', error);
+        showToast('Failed to remove exercise.');
+    }
 }
 
 // Save routine edits
