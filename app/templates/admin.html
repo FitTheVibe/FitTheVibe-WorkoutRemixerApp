@@ -658,6 +658,7 @@
     document.getElementById('wMuscle').value = w.muscle_group;
     document.getElementById('wDiff').value   = w.difficulty;
     document.getElementById('wEquip').value  = w.equipment;
+    document.getElementById('wPictureUrl').value = w.demo_img_url || '';
     document.getElementById('modalError').style.display = 'none';
     openModal('workoutModal');
   }
@@ -670,10 +671,11 @@
       muscle_group: document.getElementById('wMuscle').value.trim().toLowerCase(),
       difficulty:   document.getElementById('wDiff').value,
       equipment:    document.getElementById('wEquip').value.trim().toLowerCase(),
+      demo_img_url: document.getElementById('wPictureUrl').value.trim()
     };
 
     const errEl = document.getElementById('modalError');
-    if (!body.name || !body.description || !body.muscle_group || !body.equipment) {
+    if (!body.name || !body.description || !body.muscle_group || !body.equipment || !body.demo_img_url) {
       errEl.textContent = 'Please fill in all fields.';
       errEl.style.display = 'block';
       return;
