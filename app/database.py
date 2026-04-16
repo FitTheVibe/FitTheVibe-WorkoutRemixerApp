@@ -3,7 +3,7 @@ from sqlmodel import SQLModel, Session, create_engine, select
 from app.config import get_settings
 from contextlib import contextmanager
 
-from app.dependencies import session
+#from app.dependencies import session
 from app.utilities.security import encrypt_password
 
 from app.utilities.security import encrypt_password
