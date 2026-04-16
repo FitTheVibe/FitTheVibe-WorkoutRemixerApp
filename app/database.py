@@ -7,7 +7,7 @@ from contextlib import contextmanager
 from app.utilities.security import encrypt_password
 
 from app.utilities.security import encrypt_password
-from app.dependencies import session
+#from app.dependencies import session
 
 
 logger = logging.getLogger(__name__)
