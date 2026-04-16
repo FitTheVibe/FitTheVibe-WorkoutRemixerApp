@@ -29,7 +29,7 @@ def create_db_and_tables():
 
     SQLModel.metadata.create_all(engine)
 
-    def seed_users(session: Session):
+def seed_users(session: Session):
         from app.models.user import User
 
         # Seed Bob (Admin)
@@ -54,7 +54,7 @@ def create_db_and_tables():
             session.add(john)
             logger.info("Regular user john seeded")
     
-    session.commit()
+        session.commit()
 
 def seed_workouts(session: Session):
     from app.models.workout import Workout
