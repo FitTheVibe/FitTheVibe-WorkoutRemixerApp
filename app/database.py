@@ -26,7 +26,11 @@ def create_db_and_tables():
     from app.models.workout import Workout
     from app.models.routine import Routine
     from app.models.routine_workout import RoutineWorkout
-
+    
+    with Session(engine) as session:
+        seed_users(session)
+        seed_workouts(session)
+        
     SQLModel.metadata.create_all(engine)
 
 def seed_users(session: Session):
