@@ -11,7 +11,11 @@ from contextlib import asynccontextmanager
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     from app.database import create_db_and_tables
-    #drop_all()
+    print("DEBUG: Lifespan starting...") # Force a log entry
+    drop_all()
+    print("DEBUG: Tables dropped.")
+
+    print("DEBUG: Tables created and seeded.")
     create_db_and_tables()
     yield
 
